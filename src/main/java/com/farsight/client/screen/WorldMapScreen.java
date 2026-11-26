@@ -70,9 +70,14 @@ public class WorldMapScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Crisp dark tactical backdrop (avoids blurry world bleed behind UI text)
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        // Override to prevent Minecraft 1.21's Gaussian blur shader from blurring our map & text
         context.fill(0, 0, width, height, 0xE6070B10);
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
 
         // Header bar
         context.drawTextWithShadow(textRenderer,
@@ -87,8 +92,8 @@ public class WorldMapScreen extends Screen {
 
         context.enableScissor(mapLeft, mapTop, mapLeft + mapWidth, mapTop + mapHeight);
 
-        // 1. Crisp 3x3 pixel topographic rendering with elevation shading & Fog of War
-        int tile = 3;
+        // 1. Crisp 2x2 pixel topographic rendering with elevation shading & Fog of War
+        int tile = 2;
         World world = client != null ? client.world : null;
         BlockPos.Mutable mutable = new BlockPos.Mutable();
 
@@ -204,8 +209,6 @@ public class WorldMapScreen extends Screen {
         if (hintX + 120 < sideLeft) {
             context.drawTextWithShadow(textRenderer, "Drag: Pan | Scroll: Zoom", hintX, height - 18, 0xFF90A4AE);
         }
-
-        super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderSidebar(DrawContext context, int mouseX, int mouseY, PoiData activeWp) {

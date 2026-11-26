@@ -183,8 +183,13 @@ public class TowerPuzzleScreen extends Screen {
     }
 
     @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        context.fill(0, 0, width, height, 0xCC070B10);
+    }
+
+    @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
 
         int panelW = 240;
         int panelH = 215;
@@ -236,8 +241,6 @@ public class TowerPuzzleScreen extends Screen {
                 if ((m & RIGHT) != 0) context.fill(cx, cy - 3, x + CELL_SIZE - 3, cy + 3, wireColor);
             }
         }
-
-        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
