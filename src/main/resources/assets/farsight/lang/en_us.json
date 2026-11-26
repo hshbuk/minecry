@@ -3,6 +3,7 @@
   "block.farsight.tower_terminal": "Tower Signal Terminal",
   "block.farsight.signal_relay": "Signal Relay Node",
   "block.farsight.tower_barrier": "Tower Security Barrier",
+  "block.farsight.checkpoint_flag": "Checkpoint Flag",
   "item.farsight.scout_binoculars": "Scout Binoculars",
   "key.farsight.world_map": "Open Discovery World Map",
   "category.farsight": "FarSight: World Discovery",
@@ -16,6 +17,7 @@
   "screen.farsight.map.header": "FARSIGHT DISCOVERY MAP  |  Regions: %d  |  Special POIs: %d",
   "screen.farsight.map.center": "Center on Me",
   "screen.farsight.map.clear_wp": "Clear Waypoint",
+  "screen.farsight.map.fast_travel": "Fast Travel",
   "screen.farsight.map.click_wp": "Click to Track / Untrack Waypoint",
   "screen.farsight.map.controls": "Drag to Pan  |  Scroll to Zoom  |  Click POI for Waypoint",
 
@@ -30,5 +32,10 @@
   "message.farsight.barrier.locked": "Security Barrier locked — Tune all Signal Relays on the lower floors!",
   "message.farsight.binoculars.spotted": "Pillager Tower spotted %dm away at (%d, %d) — Marked on Map!",
   "message.farsight.binoculars.ping": "Signal detected %dm away — Scan closer to the horizon!",
-  "message.farsight.binoculars.none": "No unclaimed Pillager Towers detected in range."
+  "message.farsight.binoculars.none": "No unclaimed Pillager Towers detected in range.",
+  "message.farsight.checkpoint.already_claimed": "Checkpoint already liberated — Fast Travel unlocked!",
+  "message.farsight.checkpoint.locked": "Locked! Defeat %d Pillager guard(s) at this Checkpoint first.",
+  "message.farsight.checkpoint.liberated": "Checkpoint liberated! Fast Travel unlocked.",
+  "message.farsight.fast_travel.locked": "Fast Travel is only available to claimed Towers & liberated Checkpoints.",
+  "message.farsight.fast_travel.arrived": "Fast Traveled to %s"
 }

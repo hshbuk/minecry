@@ -18,6 +18,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+
 public class TowerActivationHandler {
 
     public static void tryActivateTower(ServerWorld world, ServerPlayerEntity player, BlockPos pos) {
@@ -66,8 +68,9 @@ public class TowerActivationHandler {
         );
         discovery.addRegion(region);
 
-        // Replace any unclaimed tower marker nearby with claimed tower marker
-        discovery.removePoi("tower_" + pos.getX() + "_" + pos.getZ());
+        // Remove any unclaimed tower markers within 64 blocks & add claimed tower marker
+        discovery.removePoisIf(p -> p.type() == PoiType.TOWER_UNCLAIMED &&
+                Math.hypot(p.x() - pos.getX(), p.z() - pos.getZ()) < 64.0);
         discovery.addPoi(new PoiData(
                 "claimed_" + pos.getX() + "_" + pos.getZ(),
                 terminal.getRegionName() + " Tower",
@@ -79,10 +82,14 @@ public class TowerActivationHandler {
                 world.getBiome(pos).getIdAsString()
         ));
 
-        // 4. Scan all special POIs in the newly unlocked region!
+        // 4. Scan all special POIs in the newly unlocked region
         int revealed = RegionScanner.scanRegion(world, discovery, region);
 
-        // 5. Sync to all players and trigger Region Unlocked banner
+        // 5. Generate Roads & Road Checkpoints connecting the Tower to Villages & Checkpoints
+        var checkpoints = RoadAndCheckpointGenerator.generateRoadsAndCheckpoints(world, discovery, region);
+        revealed += checkpoints.size();
+
+        // 6. Sync to all players, trigger Region Unlocked banner, and start Far Cry flyover cutscene!
         ModNetworking.syncAllPlayers(world);
         for (ServerPlayerEntity p : world.getPlayers()) {
             ServerPlayNetworking.send(p, new ModNetworking.RegionUnlockedPayload(
@@ -91,5 +98,7 @@ public class TowerActivationHandler {
                     revealed
             ));
         }
+
+        CutsceneManager.startRegionCutscene(world, player, region, new ArrayList<>(discovery.getPois()));
     }
 }

@@ -29,6 +29,7 @@ public class ModItems {
                         entries.add(ModBlocks.TOWER_TERMINAL);
                         entries.add(ModBlocks.SIGNAL_RELAY);
                         entries.add(ModBlocks.TOWER_BARRIER);
+                        entries.add(ModBlocks.CHECKPOINT_FLAG);
                     })
                     .build()
     );

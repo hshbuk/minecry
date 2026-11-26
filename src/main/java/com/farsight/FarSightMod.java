@@ -58,6 +58,10 @@ public class FarSightMod implements ModInitializer {
             ModNetworking.syncPlayer(handler.getPlayer());
         });
 
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(
+                com.farsight.world.CutsceneManager::tick
+        );
+
         registerCommands();
         LOGGER.info("FarSight: World Discovery initialized!");
     }
@@ -87,6 +91,22 @@ public class FarSightMod implements ModInitializer {
                                 ctx.getSource().sendFeedback(() -> Text.literal(
                                         "Spawned " + theme.defaultRegionName + " Pillager Tower at " + origin.toShortString()
                                 ).formatted(Formatting.AQUA), true);
+                                return 1;
+                            }))
+                    .then(CommandManager.literal("spawn_checkpoint")
+                            .executes(ctx -> {
+                                ServerWorld world = ctx.getSource().getWorld();
+                                BlockPos playerPos = BlockPos.ofFloored(ctx.getSource().getPosition());
+                                BlockPos origin = new BlockPos(
+                                        playerPos.getX() + 10,
+                                        world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, playerPos.getX() + 10, playerPos.getZ()),
+                                        playerPos.getZ()
+                                );
+                                TowerTheme theme = TowerTheme.fromBiome(world.getBiome(origin));
+                                com.farsight.world.RoadAndCheckpointGenerator.buildCheckpoint(world, origin, theme);
+                                ctx.getSource().sendFeedback(() -> Text.literal(
+                                        "Spawned Road Checkpoint at " + origin.toShortString()
+                                ).formatted(Formatting.GOLD), true);
                                 return 1;
                             }))
                     .then(CommandManager.literal("sync")

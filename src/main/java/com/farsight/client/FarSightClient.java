@@ -34,7 +34,7 @@ public class FarSightClient implements ClientModInitializer {
         ));
 
         ClientPlayNetworking.registerGlobalReceiver(ModNetworking.SyncDiscoveryPayload.ID, (payload, context) -> {
-            context.client().execute(() -> ClientDiscoveryCache.update(payload.regions(), payload.pois()));
+            context.client().execute(() -> ClientDiscoveryCache.update(payload.regions(), payload.pois(), payload.roads()));
         });
 
         ClientPlayNetworking.registerGlobalReceiver(ModNetworking.OpenPuzzlePayload.ID, (payload, context) -> {
@@ -47,10 +47,17 @@ public class FarSightClient implements ClientModInitializer {
             context.client().execute(() -> ClientDiscoveryCache.triggerBanner(payload.regionName(), payload.poisRevealed()));
         });
 
+        ClientPlayNetworking.registerGlobalReceiver(ModNetworking.CutsceneHudPayload.ID, (payload, context) -> {
+            context.client().execute(() -> ClientDiscoveryCache.setCutscene(payload.active(), payload.title(), payload.subtitle()));
+        });
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             ClientDiscoveryCache.tick();
+            if (ClientDiscoveryCache.isCutsceneActive() && client.options.jumpKey.wasPressed()) {
+                ClientPlayNetworking.send(new ModNetworking.SkipCutscenePayload());
+            }
             while (openMapKey.wasPressed()) {
-                if (client.currentScreen == null) {
+                if (client.currentScreen == null && !ClientDiscoveryCache.isCutsceneActive()) {
                     client.setScreen(new WorldMapScreen());
                 }
             }

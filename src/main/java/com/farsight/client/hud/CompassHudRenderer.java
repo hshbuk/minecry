@@ -20,7 +20,24 @@ public class CompassHudRenderer {
 
         TextRenderer tr = client.textRenderer;
         int screenW = client.getWindow().getScaledWidth();
+        int screenH = client.getWindow().getScaledHeight();
         int centerX = screenW / 2;
+
+        // Far Cry Region Discovery Cutscene Letterbox & Overlay
+        if (ClientDiscoveryCache.isCutsceneActive()) {
+            context.fill(0, 0, screenW, 24, 0xEE000000);
+            context.fill(0, screenH - 36, screenW, screenH, 0xEE000000);
+            context.fill(0, 24, screenW, 25, 0xFF00E5FF);
+            context.fill(0, screenH - 37, screenW, screenH - 36, 0xFF00E5FF);
+
+            context.drawCenteredTextWithShadow(tr,
+                    ClientDiscoveryCache.getCutsceneTitle(),
+                    centerX, screenH - 31, 0xFF00E5FF);
+            context.drawCenteredTextWithShadow(tr,
+                    ClientDiscoveryCache.getCutsceneSubtitle() + "  |  [SPACE] Skip",
+                    centerX, screenH - 17, 0xFFE0E0E0);
+            return;
+        }
         int barW = 240;
         int barH = 18;
         int barLeft = centerX - barW / 2;

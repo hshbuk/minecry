@@ -86,14 +86,19 @@ public class SignalRelayBlock extends Block {
             }
         }
 
-        // All relays in tower tuned -> open all TowerBarrierBlocks!
+        // All relays in tower tuned -> remove all TowerBarrierBlocks (restore ladder if one is directly below)
         for (int dx = -12; dx <= 12; dx++) {
             for (int dz = -12; dz <= 12; dz++) {
                 for (int dy = -24; dy <= 24; dy++) {
                     mutable.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
                     BlockState s = world.getBlockState(mutable);
-                    if (s.isOf(ModBlocks.TOWER_BARRIER) && !s.get(TowerBarrierBlock.OPEN)) {
-                        world.setBlockState(mutable, s.with(TowerBarrierBlock.OPEN, true), Block.NOTIFY_ALL);
+                    if (s.isOf(ModBlocks.TOWER_BARRIER)) {
+                        BlockState below = world.getBlockState(mutable.down());
+                        if (below.isOf(net.minecraft.block.Blocks.LADDER)) {
+                            world.setBlockState(mutable, below, Block.NOTIFY_ALL);
+                        } else {
+                            world.setBlockState(mutable, net.minecraft.block.Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                        }
                     }
                 }
             }

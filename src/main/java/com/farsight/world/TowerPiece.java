@@ -137,8 +137,8 @@ public class TowerPiece extends StructurePiece {
         setBlockIfInBox(world, chunkBox, baseX - 2, baseY + 11, baseZ,
                 ModBlocks.SIGNAL_RELAY.getDefaultState().with(SignalRelayBlock.TUNED, false));
 
-        // Security Barrier sealing the roof hatch at (baseX+2, baseY+20, baseZ+2)
-        setBlockIfInBox(world, chunkBox, baseX + 2, baseY + 20, baseZ + 2, ModBlocks.TOWER_BARRIER.getDefaultState());
+        // Security Barrier sealing the roof hatch above the top ladder at (baseX+2, baseY+21, baseZ+2)
+        setBlockIfInBox(world, chunkBox, baseX + 2, baseY + 21, baseZ + 2, ModBlocks.TOWER_BARRIER.getDefaultState());
 
         // 4. Loot Chest on Floor 4
         BlockPos chestPos = new BlockPos(baseX - 2, baseY + 16, baseZ + 2);

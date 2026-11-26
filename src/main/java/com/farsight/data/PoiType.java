@@ -3,6 +3,8 @@ package com.farsight.data;
 public enum PoiType {
     TOWER_CLAIMED("Tower (Claimed)", 0xFF00E5FF, "T"),
     TOWER_UNCLAIMED("Pillager Tower", 0xFFFF3B30, "!"),
+    CHECKPOINT_LOCKED("Road Checkpoint", 0xFFFF6B00, "K"),
+    CHECKPOINT_CLAIMED("Liberated Checkpoint", 0xFF00FFAA, "K"),
     VILLAGE("Village", 0xFF34C759, "V"),
     PILLAGER_OUTPOST("Pillager Outpost", 0xFFFF9500, "X"),
     TEMPLE("Ancient Temple", 0xFFFFCC00, "A"),

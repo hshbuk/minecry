@@ -3,6 +3,7 @@
   "block.farsight.tower_terminal": "מסוף שידור מגדל",
   "block.farsight.signal_relay": "ממסר תדר",
   "block.farsight.tower_barrier": "מחסום אבטחה למגדל",
+  "block.farsight.checkpoint_flag": "דגל צ'קפוינט",
   "item.farsight.scout_binoculars": "משקפת סיור",
   "key.farsight.world_map": "פתח מפת עולם (FarSight)",
   "category.farsight": "FarSight: גילוי עולם",
@@ -16,6 +17,7 @@
   "screen.farsight.map.header": "מפת FarSight  |  אזורים: %d  |  אתרים מיוחדים: %d",
   "screen.farsight.map.center": "מרכז עליי",
   "screen.farsight.map.clear_wp": "נקה יעד",
+  "screen.farsight.map.fast_travel": "טלפורט (Fast Travel)",
   "screen.farsight.map.click_wp": "לחץ לסימון / ביטול יעד (Waypoint)",
   "screen.farsight.map.controls": "גרור להזזה  |  גלגלת לזום  |  לחץ על אייקון לסימון יעד",
 
@@ -30,5 +32,10 @@
   "message.farsight.barrier.locked": "מחסום האבטחה נעול — סנכרן את כל ממסרי התדר בקומות התחתונות!",
   "message.farsight.binoculars.spotted": "מגדל פילג'רים זוהה במרחק %dm ב-(%d, %d) — סומן במפה!",
   "message.farsight.binoculars.ping": "נקלט אות במרחק %dm — כוון את המשקפת לאופק!",
-  "message.farsight.binoculars.none": "לא זוהו מגדלי פילג'רים בטווח."
+  "message.farsight.binoculars.none": "לא זוהו מגדלי פילג'רים בטווח.",
+  "message.farsight.checkpoint.already_claimed": "הצ'קפוינט כבר משוחרר — הטלפורט פתוח!",
+  "message.farsight.checkpoint.locked": "נעול! חסל %d שומרי פילג'ר בצ'קפוינט קודם.",
+  "message.farsight.checkpoint.liberated": "הצ'קפוינט שוחרר! טלפורט נפתח.",
+  "message.farsight.fast_travel.locked": "טלפורט אפשרי רק למגדלים כבושים או צ'קפוינטים משוחררים.",
+  "message.farsight.fast_travel.arrived": "הגעת בטלפורט אל %s"
 }

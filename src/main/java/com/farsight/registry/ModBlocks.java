@@ -38,6 +38,13 @@ public class ModBlocks {
                     .nonOpaque()
                     .luminance(state -> state.get(TowerBarrierBlock.OPEN) ? 2 : 10)));
 
+    public static final Block CHECKPOINT_FLAG = register("checkpoint_flag",
+            new com.farsight.block.CheckpointFlagBlock(AbstractBlock.Settings.create()
+                    .mapColor(MapColor.BRIGHT_RED)
+                    .strength(2.0f, 6.0f)
+                    .sounds(BlockSoundGroup.METAL)
+                    .luminance(state -> state.get(com.farsight.block.CheckpointFlagBlock.CLAIMED) ? 12 : 6)));
+
     private static Block register(String name, Block block) {
         Identifier id = Identifier.of(FarSightMod.MOD_ID, name);
         Registry.register(Registries.ITEM, id, new BlockItem(block, new Item.Settings()));

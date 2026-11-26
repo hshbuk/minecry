@@ -16,6 +16,7 @@ public class DiscoveryState extends PersistentState {
 
     private final Map<String, RegionData> regions = new LinkedHashMap<>();
     private final Map<String, PoiData> pois = new LinkedHashMap<>();
+    private final Map<String, RoadData> roads = new LinkedHashMap<>();
 
     public static final Type<DiscoveryState> TYPE = new Type<>(
             DiscoveryState::new,
@@ -40,6 +41,12 @@ public class DiscoveryState extends PersistentState {
             poiList.add(p.toNbt());
         }
         nbt.put("pois", poiList);
+
+        NbtList roadList = new NbtList();
+        for (RoadData road : roads.values()) {
+            roadList.add(road.toNbt());
+        }
+        nbt.put("roads", roadList);
         return nbt;
     }
 
@@ -54,6 +61,11 @@ public class DiscoveryState extends PersistentState {
         for (int i = 0; i < poiList.size(); i++) {
             PoiData p = PoiData.fromNbt(poiList.getCompound(i));
             state.pois.put(p.id(), p);
+        }
+        NbtList roadList = nbt.getList("roads", NbtElement.COMPOUND_TYPE);
+        for (int i = 0; i < roadList.size(); i++) {
+            RoadData road = RoadData.fromNbt(roadList.getCompound(i));
+            state.roads.put(road.id(), road);
         }
         return state;
     }
@@ -78,12 +90,27 @@ public class DiscoveryState extends PersistentState {
         }
     }
 
+    public void removePoisIf(java.util.function.Predicate<PoiData> predicate) {
+        if (pois.values().removeIf(predicate)) {
+            markDirty();
+        }
+    }
+
     public Collection<RegionData> getRegions() {
         return regions.values();
     }
 
     public Collection<PoiData> getPois() {
         return pois.values();
+    }
+
+    public void addRoad(RoadData road) {
+        roads.put(road.id(), road);
+        markDirty();
+    }
+
+    public Collection<RoadData> getRoads() {
+        return roads.values();
     }
 
     public boolean isDiscovered(double x, double z) {

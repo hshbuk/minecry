@@ -62,11 +62,21 @@ public class WorldMapScreen extends Screen {
                 camX = client.player.getX();
                 camZ = client.player.getZ();
             }
-        }).dimensions(mapLeft, height - 23, 105, 18).build());
+        }).dimensions(mapLeft, height - 23, 92, 18).build());
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.farsight.map.clear_wp"), btn -> {
             ClientDiscoveryCache.setActiveWaypoint(null);
-        }).dimensions(mapLeft + 111, height - 23, 115, 18).build());
+        }).dimensions(mapLeft + 96, height - 23, 98, 18).build());
+
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.farsight.map.fast_travel"), btn -> {
+            PoiData wp = ClientDiscoveryCache.getActiveWaypoint();
+            if (wp != null && (wp.type() == PoiType.TOWER_CLAIMED || wp.type() == PoiType.CHECKPOINT_CLAIMED)) {
+                net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
+                        new com.farsight.network.ModNetworking.FastTravelPayload(wp.id())
+                );
+                close();
+            }
+        }).dimensions(mapLeft + 198, height - 23, 96, 18).build());
     }
 
     @Override
@@ -125,9 +135,12 @@ public class WorldMapScreen extends Screen {
             }
         }
 
-        // 2. Draw Region Borders (glowing cyan rings)
+        // 2. Draw Region Borders (glowing cyan rings) & Roads
         for (RegionData region : ClientDiscoveryCache.getRegions()) {
             drawRegionCircle(context, region.centerX(), region.centerZ(), region.radius(), 0xCC00E5FF);
+        }
+        for (com.farsight.data.RoadData road : ClientDiscoveryCache.getRoads()) {
+            drawRoadLine(context, road.x1(), road.z1(), road.x2(), road.z2(), 0xFFD4A359);
         }
 
         // 3. Draw POIs (non-towers first, then Towers on top so Towers are never hidden!)
@@ -205,8 +218,8 @@ public class WorldMapScreen extends Screen {
         }
 
         // Footer hint (fitted so it never clips on smaller GUI scales)
-        int hintX = mapLeft + 234;
-        if (hintX + 120 < sideLeft) {
+        int hintX = mapLeft + 300;
+        if (hintX + 100 < sideLeft) {
             context.drawTextWithShadow(textRenderer, "Drag: Pan | Scroll: Zoom", hintX, height - 18, 0xFF90A4AE);
         }
     }
@@ -216,13 +229,14 @@ public class WorldMapScreen extends Screen {
         context.fill(sideLeft, mapTop, sideLeft + sideWidth, mapTop + mapHeight, 0xEE0D141C);
 
         int y = mapTop + 8;
-        context.drawTextWithShadow(textRenderer, "NEARBY TOWERS", sideLeft + 8, y, 0xFF00E5FF);
+        context.drawTextWithShadow(textRenderer, "TOWERS & CHECKPOINTS", sideLeft + 8, y, 0xFF00E5FF);
         y += 14;
 
         sidebarEntries.clear();
         List<PoiData> towers = new ArrayList<>();
         for (PoiData poi : ClientDiscoveryCache.getPois()) {
-            if (poi.type() == PoiType.TOWER_UNCLAIMED || poi.type() == PoiType.TOWER_CLAIMED) {
+            if (poi.type() == PoiType.TOWER_UNCLAIMED || poi.type() == PoiType.TOWER_CLAIMED ||
+                    poi.type() == PoiType.CHECKPOINT_LOCKED || poi.type() == PoiType.CHECKPOINT_CLAIMED) {
                 towers.add(poi);
             }
         }
@@ -253,7 +267,8 @@ public class WorldMapScreen extends Screen {
 
                 int dist = (client != null && client.player != null)
                         ? (int) Math.hypot(t.x() - client.player.getX(), t.z() - client.player.getZ()) : 0;
-                String status = t.type() == PoiType.TOWER_CLAIMED ? "[CLAIMED]" : "[LOCKED]";
+                String status = (t.type() == PoiType.TOWER_CLAIMED || t.type() == PoiType.CHECKPOINT_CLAIMED)
+                        ? "[FAST TRAVEL]" : "[LOCKED]";
                 context.drawTextWithShadow(textRenderer, t.type().getSymbol() + " " + status + " " + dist + "m",
                         sideLeft + 8, y + 4, t.type().getColor());
                 context.drawTextWithShadow(textRenderer, "X:" + t.x() + " Z:" + t.z(),
@@ -273,9 +288,9 @@ public class WorldMapScreen extends Screen {
 
         PoiType[] legendTypes = {
                 PoiType.TOWER_UNCLAIMED, PoiType.TOWER_CLAIMED,
-                PoiType.VILLAGE, PoiType.PILLAGER_OUTPOST,
-                PoiType.TEMPLE, PoiType.TRIAL_CHAMBERS,
-                PoiType.ANCIENT_CITY, PoiType.SPECIAL_CAVE
+                PoiType.CHECKPOINT_LOCKED, PoiType.CHECKPOINT_CLAIMED,
+                PoiType.VILLAGE, PoiType.TEMPLE,
+                PoiType.TRIAL_CHAMBERS, PoiType.SPECIAL_CAVE
         };
         for (PoiType pt : legendTypes) {
             if (y + 12 > mapTop + mapHeight - 4) break;
@@ -316,6 +331,17 @@ public class WorldMapScreen extends Screen {
             return 0xFF000000 | (r << 16) | (g << 8) | b;
         }
         return 0xFF1C2D27;
+    }
+
+    private void drawRoadLine(DrawContext context, int x1, int z1, int x2, int z2, int color) {
+        double dist = Math.hypot(x2 - x1, z2 - z1);
+        int steps = Math.max(8, (int) (dist / Math.max(1.0, blocksPerPixel)));
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            int sx = worldToScreenX(x1 + (x2 - x1) * t);
+            int sy = worldToScreenZ(z1 + (z2 - z1) * t);
+            context.fill(sx - 1, sy - 1, sx + 1, sy + 1, color);
+        }
     }
 
     private void drawRegionCircle(DrawContext context, int cx, int cz, int radius, int color) {

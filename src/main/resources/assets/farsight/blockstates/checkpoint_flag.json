@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "claimed=false": { "model": "farsight:block/checkpoint_flag_locked" },
+    "claimed=true": { "model": "farsight:block/checkpoint_flag_claimed" }
+  }
+}
