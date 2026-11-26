@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "G G",
+    "ICI",
+    " R "
+  ],
+  "key": {
+    "G": { "item": "minecraft:glass_pane" },
+    "I": { "item": "minecraft:copper_ingot" },
+    "C": { "item": "minecraft:amethyst_shard" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": {
+    "id": "farsight:scout_binoculars",
+    "count": 1
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "farsight:block/tower_barrier_open",
+    "top": "farsight:block/tower_barrier_open",
+    "side": "farsight:block/tower_barrier_open"
+  }
+}

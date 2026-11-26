@@ -1,0 +1,34 @@
+{
+  "itemGroup.farsight": "FarSight: גילוי עולם",
+  "block.farsight.tower_terminal": "מסוף שידור מגדל",
+  "block.farsight.signal_relay": "ממסר תדר",
+  "block.farsight.tower_barrier": "מחסום אבטחה למגדל",
+  "item.farsight.scout_binoculars": "משקפת סיור",
+  "key.farsight.world_map": "פתח מפת עולם (FarSight)",
+  "category.farsight": "FarSight: גילוי עולם",
+
+  "screen.farsight.puzzle.title": "סנכרון תדר המגדל",
+  "screen.farsight.puzzle.header": "מסוף שידור // %s",
+  "screen.farsight.puzzle.hint": "לחץ על המוליכים כדי לחבר מ-IN ל-OUT",
+  "screen.farsight.puzzle.synced": "השידור סונכרן בהצלחה!",
+
+  "screen.farsight.map.title": "מפת גילוי עולם",
+  "screen.farsight.map.header": "מפת FarSight  |  אזורים: %d  |  אתרים מיוחדים: %d",
+  "screen.farsight.map.center": "מרכז עליי",
+  "screen.farsight.map.clear_wp": "נקה יעד",
+  "screen.farsight.map.click_wp": "לחץ לסימון / ביטול יעד (Waypoint)",
+  "screen.farsight.map.controls": "גרור להזזה  |  גלגלת לזום  |  לחץ על אייקון לסימון יעד",
+
+  "hud.farsight.region_unlocked": "אזור חדש נפתח: %s",
+  "hud.farsight.pois_revealed": "%d מקומות מיוחדים נחשפו באזור!",
+
+  "message.farsight.tower.already_active": "המגדל כבר נכבש — האזור %s פתוח.",
+  "message.farsight.tower.locked": "נעול! חסל %d שומרי פילג'ר וסנכרן %d ממסרי תדר קודם.",
+  "message.farsight.relay.already_tuned": "ממסר התדר כבר מסונכרן!",
+  "message.farsight.relay.tuned": "ממסר התדר סונכרן!",
+  "message.farsight.relay.tuning": "תדר נוכחי: %d / יעד: %d",
+  "message.farsight.barrier.locked": "מחסום האבטחה נעול — סנכרן את כל ממסרי התדר בקומות התחתונות!",
+  "message.farsight.binoculars.spotted": "מגדל פילג'רים זוהה במרחק %dm ב-(%d, %d) — סומן במפה!",
+  "message.farsight.binoculars.ping": "נקלט אות במרחק %dm — כוון את המשקפת לאופק!",
+  "message.farsight.binoculars.none": "לא זוהו מגדלי פילג'רים בטווח."
+}

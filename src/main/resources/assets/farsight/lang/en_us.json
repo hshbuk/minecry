@@ -1,0 +1,34 @@
+{
+  "itemGroup.farsight": "FarSight: World Discovery",
+  "block.farsight.tower_terminal": "Tower Signal Terminal",
+  "block.farsight.signal_relay": "Signal Relay Node",
+  "block.farsight.tower_barrier": "Tower Security Barrier",
+  "item.farsight.scout_binoculars": "Scout Binoculars",
+  "key.farsight.world_map": "Open Discovery World Map",
+  "category.farsight": "FarSight: World Discovery",
+
+  "screen.farsight.puzzle.title": "Tower Signal Alignment",
+  "screen.farsight.puzzle.header": "SIGNAL TERMINAL // %s",
+  "screen.farsight.puzzle.hint": "Click conduits to connect IN to OUT",
+  "screen.farsight.puzzle.synced": "SIGNAL SYNCHRONIZED!",
+
+  "screen.farsight.map.title": "FarSight World Map",
+  "screen.farsight.map.header": "FARSIGHT DISCOVERY MAP  |  Regions: %d  |  Special POIs: %d",
+  "screen.farsight.map.center": "Center on Me",
+  "screen.farsight.map.clear_wp": "Clear Waypoint",
+  "screen.farsight.map.click_wp": "Click to Track / Untrack Waypoint",
+  "screen.farsight.map.controls": "Drag to Pan  |  Scroll to Zoom  |  Click POI for Waypoint",
+
+  "hud.farsight.region_unlocked": "REGION UNLOCKED: %s",
+  "hud.farsight.pois_revealed": "%d Special Locations Revealed",
+
+  "message.farsight.tower.already_active": "Tower already claimed — %s is unlocked.",
+  "message.farsight.tower.locked": "Locked! Defeat %d Pillager guard(s) & tune %d Signal Relay(s) first.",
+  "message.farsight.relay.already_tuned": "Signal Relay already locked in!",
+  "message.farsight.relay.tuned": "Signal Relay synchronized!",
+  "message.farsight.relay.tuning": "Frequency: %d / Target: %d",
+  "message.farsight.barrier.locked": "Security Barrier locked — Tune all Signal Relays on the lower floors!",
+  "message.farsight.binoculars.spotted": "Pillager Tower spotted %dm away at (%d, %d) — Marked on Map!",
+  "message.farsight.binoculars.ping": "Signal detected %dm away — Scan closer to the horizon!",
+  "message.farsight.binoculars.none": "No unclaimed Pillager Towers detected in range."
+}

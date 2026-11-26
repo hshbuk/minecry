@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "tuned=false": { "model": "farsight:block/signal_relay_off" },
+    "tuned=true": { "model": "farsight:block/signal_relay_on" }
+  }
+}

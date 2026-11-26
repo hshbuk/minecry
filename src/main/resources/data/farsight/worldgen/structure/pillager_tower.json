@@ -1,0 +1,6 @@
+{
+  "type": "farsight:pillager_tower",
+  "biomes": "#farsight:has_pillager_tower",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}

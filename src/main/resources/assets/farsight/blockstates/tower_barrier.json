@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "open=false": { "model": "farsight:block/tower_barrier_closed" },
+    "open=true": { "model": "farsight:block/tower_barrier_open" }
+  }
+}

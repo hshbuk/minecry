@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "farsight",
+  "version": "${version}",
+  "name": "FarSight: World Discovery",
+  "description": "Far Cry-inspired world discovery mod with biome-themed Pillager towers, puzzles, Fog of War world map, HUD compass, and 3D POI markers.",
+  "authors": [
+    "FarSight Dev"
+  ],
+  "license": "MIT",
+  "icon": "assets/farsight/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.farsight.FarSightMod"
+    ],
+    "client": [
+      "com.farsight.client.FarSightClient"
+    ]
+  },
+  "mixins": [
+    "farsight.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
