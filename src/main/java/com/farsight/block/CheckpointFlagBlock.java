@@ -91,6 +91,13 @@ public class CheckpointFlagBlock extends Block {
         com.farsight.data.PlayerProgressState.get(serverWorld).addScore(serverPlayer, 200 * tier, 1);
         ModNetworking.syncProgress(serverPlayer);
 
+        // Spawn a Wandering FarSight Merchant at the liberated checkpoint!
+        var merchant = com.farsight.registry.ModEntities.FARSIGHT_MERCHANT.create(serverWorld);
+        if (merchant != null) {
+            merchant.refreshPositionAndAngles(pos.getX() - 1.5, pos.getY(), pos.getZ() + 1.5, 0, 0);
+            serverWorld.spawnEntity(merchant);
+        }
+
         serverPlayer.sendMessage(Text.translatable("message.farsight.checkpoint.liberated").formatted(Formatting.GREEN), true);
         return ActionResult.SUCCESS;
     }

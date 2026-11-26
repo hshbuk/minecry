@@ -38,6 +38,7 @@ public class FarSightMod implements ModInitializer {
     public void onInitialize() {
         ModBlocks.init();
         ModBlockEntities.init();
+        com.farsight.registry.ModEntities.init();
         ModItems.init();
 
         TOWER_PIECE_TYPE = Registry.register(
@@ -145,6 +146,17 @@ public class FarSightMod implements ModInitializer {
                                 ctx.getSource().sendFeedback(() -> Text.literal(
                                         "Spawned Road Checkpoint at " + origin.toShortString()
                                 ).formatted(Formatting.GOLD), true);
+                                return 1;
+                            }))
+                    .then(CommandManager.literal("spawn_merchant")
+                            .executes(ctx -> {
+                                ServerWorld world = ctx.getSource().getWorld();
+                                BlockPos p = BlockPos.ofFloored(ctx.getSource().getPosition());
+                                var merchant = com.farsight.registry.ModEntities.FARSIGHT_MERCHANT.create(world);
+                                if (merchant != null) {
+                                    merchant.refreshPositionAndAngles(p.getX() + 2, p.getY(), p.getZ(), 0, 0);
+                                    world.spawnEntity(merchant);
+                                }
                                 return 1;
                             }))
                     .then(CommandManager.literal("sync")

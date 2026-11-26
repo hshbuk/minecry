@@ -8,6 +8,12 @@
   "item.farsight.tactical_machete": "מצ'טה טקטית",
   "item.farsight.hunter_bow": "קשת ציידים מתקדמת",
   "item.farsight.flare_launcher": "משגר נורים מתפוצצים",
+  "item.farsight.horse_whistle": "משרוקית סוס סיור",
+  "item.farsight.scout_plane_item": "ערכת מטוס סיור",
+  "item.farsight.attack_heli_item": "ערכת מסוק סיור",
+  "entity.farsight.scout_plane": "מטוס סיור",
+  "entity.farsight.attack_heli": "מסוק סיור",
+  "entity.farsight.farsight_merchant": "סוחר נווד FarSight",
   "key.farsight.world_map": "פתח מפת עולם (FarSight)",
   "key.farsight.upgrades": "פתח שדרוגים ונשקייה",
   "category.farsight": "FarSight: גילוי עולם",
@@ -44,5 +50,7 @@
   "message.farsight.fast_travel.locked": "טלפורט אפשרי רק למגדלים כבושים או צ'קפוינטים משוחררים.",
   "message.farsight.fast_travel.arrived": "הגעת בטלפורט אל %s",
   "message.farsight.level_up": "עלית רמה! הגעת לרמה %d (+1 נקודת מיומנות)",
-  "message.farsight.armory.not_enough": "אין מספיק נקודות! נדרשות %d נקודות."
+  "message.farsight.armory.not_enough": "אין מספיק נקודות! נדרשות %d נקודות.",
+  "message.farsight.horse.recalled": "סוס הסיור שלך דהר אליך!",
+  "message.farsight.horse.summoned": "זימנת סוס סיור משוריין!"
 }

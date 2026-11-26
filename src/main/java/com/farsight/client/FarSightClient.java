@@ -27,6 +27,19 @@ public class FarSightClient implements ClientModInitializer {
     public void onInitializeClient() {
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.TOWER_BARRIER, RenderLayer.getTranslucent());
 
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(
+                com.farsight.registry.ModEntities.SCOUT_PLANE,
+                ctx -> new com.farsight.client.render.VehicleEntityRenderer<>(ctx, false)
+        );
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(
+                com.farsight.registry.ModEntities.ATTACK_HELI,
+                ctx -> new com.farsight.client.render.VehicleEntityRenderer<>(ctx, true)
+        );
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(
+                com.farsight.registry.ModEntities.FARSIGHT_MERCHANT,
+                net.minecraft.client.render.entity.WanderingTraderEntityRenderer::new
+        );
+
         openMapKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.farsight.world_map",
                 InputUtil.Type.KEYSYM,
@@ -64,6 +77,15 @@ public class FarSightClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             ClientDiscoveryCache.tick();
+            if (client.player != null && client.player.getVehicle() != null &&
+                    (client.player.getVehicle() instanceof com.farsight.entity.ScoutPlaneEntity ||
+                            client.player.getVehicle() instanceof com.farsight.entity.AttackHeliEntity)) {
+                float fwd = (client.options.forwardKey.isPressed() ? 1.0f : 0.0f) - (client.options.backKey.isPressed() ? 1.0f : 0.0f);
+                float str = (client.options.rightKey.isPressed() ? 1.0f : 0.0f) - (client.options.leftKey.isPressed() ? 1.0f : 0.0f);
+                boolean up = client.options.jumpKey.isPressed();
+                boolean down = client.options.sprintKey.isPressed();
+                ClientPlayNetworking.send(new ModNetworking.VehicleInputPayload(fwd, str, up, down));
+            }
             if (ClientDiscoveryCache.isCutsceneActive() && client.options.jumpKey.wasPressed()) {
                 ClientPlayNetworking.send(new ModNetworking.SkipCutscenePayload());
             }

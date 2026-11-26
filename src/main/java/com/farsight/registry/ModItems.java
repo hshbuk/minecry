@@ -36,6 +36,24 @@ public class ModItems {
             new com.farsight.item.FlareLauncherItem(new Item.Settings().maxCount(1).maxDamage(180))
     );
 
+    public static final Item HORSE_WHISTLE = Registry.register(
+            Registries.ITEM,
+            Identifier.of(FarSightMod.MOD_ID, "horse_whistle"),
+            new com.farsight.item.HorseWhistleItem(new Item.Settings().maxCount(1))
+    );
+
+    public static final Item SCOUT_PLANE_ITEM = Registry.register(
+            Registries.ITEM,
+            Identifier.of(FarSightMod.MOD_ID, "scout_plane_item"),
+            new com.farsight.item.VehicleSpawnItem(new Item.Settings().maxCount(1), () -> ModEntities.SCOUT_PLANE)
+    );
+
+    public static final Item ATTACK_HELI_ITEM = Registry.register(
+            Registries.ITEM,
+            Identifier.of(FarSightMod.MOD_ID, "attack_heli_item"),
+            new com.farsight.item.VehicleSpawnItem(new Item.Settings().maxCount(1), () -> ModEntities.ATTACK_HELI)
+    );
+
     public static final ItemGroup FARSIGHT_GROUP = Registry.register(
             Registries.ITEM_GROUP,
             Identifier.of(FarSightMod.MOD_ID, "farsight_group"),
@@ -44,6 +62,9 @@ public class ModItems {
                     .displayName(Text.translatable("itemGroup.farsight"))
                     .entries((context, entries) -> {
                         entries.add(SCOUT_BINOCULARS);
+                        entries.add(HORSE_WHISTLE);
+                        entries.add(SCOUT_PLANE_ITEM);
+                        entries.add(ATTACK_HELI_ITEM);
                         entries.add(TACTICAL_MACHETE);
                         entries.add(HUNTER_BOW);
                         entries.add(FLARE_LAUNCHER);

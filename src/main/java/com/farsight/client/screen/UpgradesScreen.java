@@ -17,8 +17,8 @@ public class UpgradesScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        int panelW = 420;
-        int panelH = 220;
+        int panelW = 430;
+        int panelH = 248;
         int left = (width - panelW) / 2;
         int top = (height - panelH) / 2;
 
@@ -27,16 +27,16 @@ public class UpgradesScreen extends Screen {
             final int idx = i;
             addDrawableChild(ButtonWidget.builder(Text.literal("+1"), btn -> {
                 ClientPlayNetworking.send(new ModNetworking.UpgradeSkillPayload(idx));
-            }).dimensions(left + 172, top + 64 + i * 36, 28, 20).build());
+            }).dimensions(left + 174, top + 62 + i * 38, 28, 20).build());
         }
 
-        // Right column: 3 Armory weapon buttons
-        int[] costs = {200, 300, 450};
-        for (int i = 0; i < 3; i++) {
+        // Right column: 6 Armory items (3 Weapons + 3 Vehicles/Mounts)
+        int[] costs = {200, 300, 450, 150, 600, 900};
+        for (int i = 0; i < 6; i++) {
             final int idx = i;
             addDrawableChild(ButtonWidget.builder(Text.literal(costs[i] + " PTS"), btn -> {
                 ClientPlayNetworking.send(new ModNetworking.BuyWeaponPayload(idx));
-            }).dimensions(left + 340, top + 64 + i * 44, 66, 20).build());
+            }).dimensions(left + 356, top + 60 + i * 29, 62, 18).build());
         }
     }
 
@@ -49,8 +49,8 @@ public class UpgradesScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
-        int panelW = 420;
-        int panelH = 220;
+        int panelW = 430;
+        int panelH = 248;
         int left = (width - panelW) / 2;
         int top = (height - panelH) / 2;
 
@@ -59,7 +59,7 @@ public class UpgradesScreen extends Screen {
 
         PlayerProgress p = ClientDiscoveryCache.getProgress();
         context.drawCenteredTextWithShadow(textRenderer,
-                "FARSIGHT SKILLS & ARMORY",
+                "FARSIGHT SKILLS, ARMORY & VEHICLES",
                 width / 2, top + 10, 0xFF00E5FF);
         context.drawCenteredTextWithShadow(textRenderer,
                 "LVL " + p.level + "  |  SCORE: " + p.score + " / " + p.getNextLevelThreshold() +
@@ -74,21 +74,23 @@ public class UpgradesScreen extends Screen {
         String[] skillNames = {"Vitality (+2 HP)", "Swiftness (+8% Spd)", "Lethality (+1.5 Dmg)", "Scavenger (+25% Pts)"};
         int[] skillVals = {p.vitality, p.swiftness, p.lethality, p.scavenger};
         for (int i = 0; i < 4; i++) {
-            int y = top + 62 + i * 36;
-            context.fill(left + 12, y, left + 166, y + 26, 0xFF141E29);
+            int y = top + 60 + i * 38;
+            context.fill(left + 12, y, left + 168, y + 26, 0xFF141E29);
             context.drawTextWithShadow(textRenderer, skillNames[i], left + 16, y + 4, 0xFFFFFFFF);
             context.drawTextWithShadow(textRenderer, "Rank " + skillVals[i] + " / 5", left + 16, y + 15, 0xFF34C759);
         }
 
-        // Armory Column
-        context.drawTextWithShadow(textRenderer, "ARMORY (WEAPONS)", left + 224, top + 44, 0xFF00E5FF);
-        String[] weaponNames = {"Tactical Machete", "Hunter Bow", "Flare Launcher"};
-        String[] weaponDescs = {"9 DMG + Speed on Kill", "Fast High-Velocity Bow", "Incendiary Flare Shot"};
-        for (int i = 0; i < 3; i++) {
-            int y = top + 62 + i * 44;
-            context.fill(left + 222, y, left + 335, y + 32, 0xFF141E29);
-            context.drawTextWithShadow(textRenderer, weaponNames[i], left + 226, y + 5, 0xFFFF9500);
-            context.drawTextWithShadow(textRenderer, weaponDescs[i], left + 226, y + 17, 0xFFB0BEC5);
+        // Armory & Vehicles Column
+        context.drawTextWithShadow(textRenderer, "ARMORY & VEHICLES", left + 222, top + 44, 0xFF00E5FF);
+        String[] itemNames = {
+                "Tactical Machete", "Hunter Bow", "Flare Launcher",
+                "Scout Horse Whistle", "Scout Plane Kit", "Recon Helicopter Kit"
+        };
+        int[] itemColors = {0xFFFF9500, 0xFFFF9500, 0xFFFF9500, 0xFF34C759, 0xFF00E5FF, 0xFF00E5FF};
+        for (int i = 0; i < 6; i++) {
+            int y = top + 58 + i * 29;
+            context.fill(left + 220, y, left + 350, y + 22, 0xFF141E29);
+            context.drawTextWithShadow(textRenderer, itemNames[i], left + 224, y + 7, itemColors[i]);
         }
     }
 

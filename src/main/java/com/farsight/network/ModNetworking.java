@@ -236,6 +236,24 @@ public class ModNetworking {
         }
     }
 
+    public record VehicleInputPayload(float forward, float strafe, boolean up, boolean down) implements CustomPayload {
+        public static final Id<VehicleInputPayload> ID = new Id<>(Identifier.of(FarSightMod.MOD_ID, "vehicle_input"));
+        public static final PacketCodec<RegistryByteBuf, VehicleInputPayload> CODEC = PacketCodec.of(
+                (v, buf) -> {
+                    buf.writeFloat(v.forward);
+                    buf.writeFloat(v.strafe);
+                    buf.writeBoolean(v.up);
+                    buf.writeBoolean(v.down);
+                },
+                buf -> new VehicleInputPayload(buf.readFloat(), buf.readFloat(), buf.readBoolean(), buf.readBoolean())
+        );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+
     public static void registerPayloads() {
         PayloadTypeRegistry.playS2C().register(SyncDiscoveryPayload.ID, SyncDiscoveryPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(OpenPuzzlePayload.ID, OpenPuzzlePayload.CODEC);
@@ -247,6 +265,7 @@ public class ModNetworking {
         PayloadTypeRegistry.playC2S().register(SkipCutscenePayload.ID, SkipCutscenePayload.CODEC);
         PayloadTypeRegistry.playC2S().register(UpgradeSkillPayload.ID, UpgradeSkillPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BuyWeaponPayload.ID, BuyWeaponPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(VehicleInputPayload.ID, VehicleInputPayload.CODEC);
     }
 
     public static void registerServerReceivers() {
@@ -285,6 +304,23 @@ public class ModNetworking {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> handleBuyWeapon(player, payload.weaponIndex()));
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(VehicleInputPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> {
+                var vehicle = player.getVehicle();
+                if (vehicle instanceof com.farsight.entity.ScoutPlaneEntity plane) {
+                    plane.inputForward = payload.forward();
+                    plane.inputUp = payload.up();
+                    plane.inputDown = payload.down();
+                } else if (vehicle instanceof com.farsight.entity.AttackHeliEntity heli) {
+                    heli.inputForward = payload.forward();
+                    heli.inputStrafe = payload.strafe();
+                    heli.inputUp = payload.up();
+                    heli.inputDown = payload.down();
+                }
+            });
+        });
     }
 
     private static void handleBuyWeapon(ServerPlayerEntity player, int weaponIndex) {
@@ -295,6 +331,9 @@ public class ModNetworking {
             case 0 -> 200; // Tactical Machete
             case 1 -> 300; // Hunter Bow
             case 2 -> 450; // Flare Launcher
+            case 3 -> 150; // Scout Horse Whistle
+            case 4 -> 600; // Scout Plane Kit
+            case 5 -> 900; // Recon Helicopter Kit
             default -> 999999;
         };
         if (prog.score < cost) {
@@ -305,6 +344,9 @@ public class ModNetworking {
             case 0 -> new ItemStack(ModItems.TACTICAL_MACHETE);
             case 1 -> new ItemStack(ModItems.HUNTER_BOW);
             case 2 -> new ItemStack(ModItems.FLARE_LAUNCHER);
+            case 3 -> new ItemStack(ModItems.HORSE_WHISTLE);
+            case 4 -> new ItemStack(ModItems.SCOUT_PLANE_ITEM);
+            case 5 -> new ItemStack(ModItems.ATTACK_HELI_ITEM);
             default -> ItemStack.EMPTY;
         };
         if (stack.isEmpty()) return;

@@ -8,6 +8,12 @@
   "item.farsight.tactical_machete": "Tactical Machete",
   "item.farsight.hunter_bow": "Recurve Hunter Bow",
   "item.farsight.flare_launcher": "Flare Launcher",
+  "item.farsight.horse_whistle": "Scout Horse Whistle",
+  "item.farsight.scout_plane_item": "Scout Plane Kit",
+  "item.farsight.attack_heli_item": "Recon Helicopter Kit",
+  "entity.farsight.scout_plane": "Scout Plane",
+  "entity.farsight.attack_heli": "Recon Helicopter",
+  "entity.farsight.farsight_merchant": "FarSight Caravan Merchant",
   "key.farsight.world_map": "Open Discovery World Map",
   "key.farsight.upgrades": "Open Skills & Armory",
   "category.farsight": "FarSight: World Discovery",
@@ -44,5 +50,7 @@
   "message.farsight.fast_travel.locked": "Fast Travel is only available to claimed Towers & liberated Checkpoints.",
   "message.farsight.fast_travel.arrived": "Fast Traveled to %s",
   "message.farsight.level_up": "LEVEL UP! You reached Level %d (+1 Skill Point)",
-  "message.farsight.armory.not_enough": "Not enough Score! Need %d PTS."
+  "message.farsight.armory.not_enough": "Not enough Score! Need %d PTS.",
+  "message.farsight.horse.recalled": "Your Scout Horse galloped to your side!",
+  "message.farsight.horse.summoned": "Summoned your armored Scout Horse!"
 }
