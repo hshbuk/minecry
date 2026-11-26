@@ -16,7 +16,7 @@ public class CompassHudRenderer {
     public static void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerEntity player = client.player;
-        if (player == null || client.options.hudHidden) return;
+        if (player == null || client.options.hudHidden || client.currentScreen != null) return;
 
         TextRenderer tr = client.textRenderer;
         int screenW = client.getWindow().getScaledWidth();

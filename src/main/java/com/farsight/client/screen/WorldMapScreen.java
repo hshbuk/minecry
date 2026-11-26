@@ -71,7 +71,8 @@ public class WorldMapScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        // Crisp dark tactical backdrop (avoids blurry world bleed behind UI text)
+        context.fill(0, 0, width, height, 0xE6070B10);
 
         // Header bar
         context.drawTextWithShadow(textRenderer,
@@ -91,12 +92,17 @@ public class WorldMapScreen extends Screen {
         World world = client != null ? client.world : null;
         BlockPos.Mutable mutable = new BlockPos.Mutable();
 
+        double playerX = (client != null && client.player != null) ? client.player.getX() : 0;
+        double playerZ = (client != null && client.player != null) ? client.player.getZ() : 0;
+        boolean hasPlayer = client != null && client.player != null;
+
         for (int sx = 0; sx < mapWidth; sx += tile) {
             for (int sy = 0; sy < mapHeight; sy += tile) {
                 double wx = screenToWorldX(mapLeft + sx + tile * 0.5);
                 double wz = screenToWorldZ(mapTop + sy + tile * 0.5);
 
-                boolean discovered = ClientDiscoveryCache.isDiscovered(wx, wz);
+                boolean nearPlayer = hasPlayer && ((wx - playerX) * (wx - playerX) + (wz - playerZ) * (wz - playerZ)) <= 80.0 * 80.0;
+                boolean discovered = nearPlayer || ClientDiscoveryCache.isDiscovered(wx, wz);
                 int color;
                 if (!discovered) {
                     // Clean dark tactical Fog of War with subtle coordinate grid lines
@@ -193,10 +199,11 @@ public class WorldMapScreen extends Screen {
             context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
         }
 
-        // Footer hint
-        context.drawTextWithShadow(textRenderer,
-                Text.translatable("screen.farsight.map.controls"),
-                mapLeft + 234, height - 18, 0xFF90A4AE);
+        // Footer hint (fitted so it never clips on smaller GUI scales)
+        int hintX = mapLeft + 234;
+        if (hintX + 120 < sideLeft) {
+            context.drawTextWithShadow(textRenderer, "Drag: Pan | Scroll: Zoom", hintX, height - 18, 0xFF90A4AE);
+        }
 
         super.render(context, mouseX, mouseY, delta);
     }
@@ -228,7 +235,8 @@ public class WorldMapScreen extends Screen {
             context.drawTextWithShadow(textRenderer, "/farsight spawn_tower", sideLeft + 8, y, 0xFF90A4AE);
             y += 16;
         } else {
-            int maxShow = Math.min(5, towers.size());
+            int availableForTowers = Math.max(30, mapHeight - 132);
+            int maxShow = Math.min(towers.size(), Math.max(1, availableForTowers / 30));
             for (int i = 0; i < maxShow; i++) {
                 PoiData t = towers.get(i);
                 int rowH = 26;
