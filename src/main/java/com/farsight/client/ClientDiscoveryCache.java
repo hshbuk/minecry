@@ -1,16 +1,20 @@
 package com.farsight.client;
 
 import com.farsight.data.PoiData;
+import com.farsight.data.PoiType;
 import com.farsight.data.RegionData;
 import com.farsight.data.RoadData;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class ClientDiscoveryCache {
     private static List<RegionData> regions = new ArrayList<>();
     private static List<PoiData> pois = new ArrayList<>();
     private static List<RoadData> roads = new ArrayList<>();
+    private static final Set<PoiType> hiddenTypes = EnumSet.noneOf(PoiType.class);
     private static PoiData activeWaypoint = null;
 
     private static String bannerRegionName = "";
@@ -61,6 +65,16 @@ public class ClientDiscoveryCache {
 
     public static void setActiveWaypoint(PoiData waypoint) {
         activeWaypoint = waypoint;
+    }
+
+    public static void toggleTypeHidden(PoiType type) {
+        if (!hiddenTypes.remove(type)) {
+            hiddenTypes.add(type);
+        }
+    }
+
+    public static boolean isTypeHidden(PoiType type) {
+        return hiddenTypes.contains(type);
     }
 
     public static void triggerBanner(String regionName, int poisRevealed) {

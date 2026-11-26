@@ -240,13 +240,23 @@ public class ModNetworking {
             return;
         }
 
-        double destX = target.x() + 1.5;
-        double destZ = target.z() + 1.5;
-        double destY = target.type() == PoiType.TOWER_CLAIMED
-                ? target.y() + 1.0
-                : world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, target.x() + 1, target.z() + 1);
+        // Force-load target chunk so heightmap & blocks are valid even 1000+ blocks away
+        world.getChunk(target.x() >> 4, target.z() >> 4);
+
+        double destX = target.x() + 0.5;
+        double destZ = target.z() + 0.5;
+        int topY = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, target.x(), target.z());
+        double destY;
+        if (target.type() == PoiType.TOWER_CLAIMED) {
+            destY = target.y() > world.getBottomY() + 5 ? target.y() + 1.0 : Math.max(topY, world.getSeaLevel() + 1);
+            destX = target.x() + 1.5;
+            destZ = target.z() + 1.5;
+        } else {
+            destY = Math.max(topY, target.y() > world.getBottomY() + 5 ? target.y() : world.getSeaLevel() + 1);
+        }
 
         world.playSound(null, player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.1f);
+        player.fallDistance = 0.0f;
         player.teleport(world, destX, destY, destZ, player.getYaw(), player.getPitch());
         world.playSound(null, BlockPos.ofFloored(destX, destY, destZ), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.2f);
         world.spawnParticles(ParticleTypes.END_ROD, destX, destY + 1.0, destZ, 20, 0.5, 0.7, 0.5, 0.05);

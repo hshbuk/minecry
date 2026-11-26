@@ -36,8 +36,10 @@ public class WorldMapScreen extends Screen {
     private double lastMouseX, lastMouseY;
 
     private final List<SidebarEntry> sidebarEntries = new ArrayList<>();
+    private final List<LegendEntry> legendEntries = new ArrayList<>();
 
     private record SidebarEntry(PoiData poi, int x, int y, int w, int h) {}
+    private record LegendEntry(PoiType type, int x, int y, int w, int h) {}
 
     public WorldMapScreen() {
         super(Text.translatable("screen.farsight.map.title"));
@@ -153,6 +155,10 @@ public class WorldMapScreen extends Screen {
         long pulse = (System.currentTimeMillis() / 350) % 2;
 
         for (PoiData poi : sortedPois) {
+            boolean isWp = activeWp != null && activeWp.id().equals(poi.id());
+            if (!isWp && ClientDiscoveryCache.isTypeHidden(poi.type())) {
+                continue;
+            }
             int px = worldToScreenX(poi.x());
             int py = worldToScreenZ(poi.z());
             if (px < mapLeft - 14 || px > mapLeft + mapWidth + 14 || py < mapTop - 14 || py > mapTop + mapHeight + 14) {
@@ -160,7 +166,6 @@ public class WorldMapScreen extends Screen {
             }
 
             boolean isTower = poi.type() == PoiType.TOWER_UNCLAIMED || poi.type() == PoiType.TOWER_CLAIMED;
-            boolean isWp = activeWp != null && activeWp.id().equals(poi.id());
             int size = isTower ? 7 : 6;
             int bgColor = poi.type().getColor();
 
@@ -279,24 +284,34 @@ public class WorldMapScreen extends Screen {
             }
         }
 
-        // Legend at bottom of sidebar
+        // Legend at bottom of sidebar (click any row to show/hide that type!)
         y += 6;
         context.fill(sideLeft + 6, y, sideLeft + sideWidth - 6, y + 1, 0x4400E5FF);
         y += 6;
-        context.drawTextWithShadow(textRenderer, "LEGEND", sideLeft + 8, y, 0xFF00E5FF);
+        context.drawTextWithShadow(textRenderer, "FILTER (CLICK)", sideLeft + 8, y, 0xFF00E5FF);
         y += 12;
 
+        legendEntries.clear();
         PoiType[] legendTypes = {
                 PoiType.TOWER_UNCLAIMED, PoiType.TOWER_CLAIMED,
                 PoiType.CHECKPOINT_LOCKED, PoiType.CHECKPOINT_CLAIMED,
                 PoiType.VILLAGE, PoiType.TEMPLE,
-                PoiType.TRIAL_CHAMBERS, PoiType.SPECIAL_CAVE
+                PoiType.TRIAL_CHAMBERS, PoiType.SPECIAL_CAVE,
+                PoiType.MINESHAFT, PoiType.RUINED_PORTAL
         };
         for (PoiType pt : legendTypes) {
             if (y + 12 > mapTop + mapHeight - 4) break;
-            context.fill(sideLeft + 8, y + 1, sideLeft + 17, y + 10, pt.getColor());
-            context.drawCenteredTextWithShadow(textRenderer, pt.getSymbol(), sideLeft + 12, y + 1, 0xFF000000);
-            context.drawTextWithShadow(textRenderer, pt.getDisplayName(), sideLeft + 21, y + 1, 0xFFD0D8E0);
+            boolean hidden = ClientDiscoveryCache.isTypeHidden(pt);
+            boolean hovered = mouseX >= sideLeft + 6 && mouseX <= sideLeft + sideWidth - 6 && mouseY >= y && mouseY < y + 11;
+            if (hovered) {
+                context.fill(sideLeft + 6, y, sideLeft + sideWidth - 6, y + 11, 0x33FFFFFF);
+            }
+            int boxColor = hidden ? 0xFF37474F : pt.getColor();
+            int textColor = hidden ? 0xFF607D8B : 0xFFD0D8E0;
+            context.fill(sideLeft + 8, y + 1, sideLeft + 17, y + 10, boxColor);
+            context.drawCenteredTextWithShadow(textRenderer, hidden ? "-" : pt.getSymbol(), sideLeft + 12, y + 1, 0xFF000000);
+            context.drawTextWithShadow(textRenderer, pt.getDisplayName(), sideLeft + 21, y + 1, textColor);
+            legendEntries.add(new LegendEntry(pt, sideLeft + 6, y, sideWidth - 12, 11));
             y += 12;
         }
     }
@@ -378,6 +393,17 @@ public class WorldMapScreen extends Screen {
             return true;
         }
         if (button == 0) {
+            // Check legend filter toggles
+            for (LegendEntry le : legendEntries) {
+                if (mouseX >= le.x && mouseX <= le.x + le.w && mouseY >= le.y && mouseY <= le.y + le.h) {
+                    ClientDiscoveryCache.toggleTypeHidden(le.type);
+                    if (client != null) {
+                        client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+                    }
+                    return true;
+                }
+            }
+
             // Check sidebar tower clicks (center map + toggle waypoint)
             for (SidebarEntry entry : sidebarEntries) {
                 if (mouseX >= entry.x && mouseX <= entry.x + entry.w && mouseY >= entry.y && mouseY <= entry.y + entry.h) {

@@ -67,10 +67,11 @@ public class CompassHudRenderer {
         // 2. Discovered POIs & Active Waypoint on Compass
         PoiData activeWp = ClientDiscoveryCache.getActiveWaypoint();
         for (PoiData poi : ClientDiscoveryCache.getPois()) {
+            boolean isWp = activeWp != null && activeWp.id().equals(poi.id());
+            if (!isWp && ClientDiscoveryCache.isTypeHidden(poi.type())) continue;
             double dx = poi.x() + 0.5 - player.getX();
             double dz = poi.z() + 0.5 - player.getZ();
             double dist = Math.hypot(dx, dz);
-            boolean isWp = activeWp != null && activeWp.id().equals(poi.id());
             if (!isWp && dist > 800.0) continue;
 
             // Convert (dx, dz) to Minecraft yaw (-atan2(dx, dz))

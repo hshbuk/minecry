@@ -55,8 +55,9 @@ public class WorldMarkerRenderer {
         boolean hasVertices = false;
 
         for (PoiData poi : ClientDiscoveryCache.getPois()) {
-            double distSq = client.player.squaredDistanceTo(poi.x() + 0.5, client.player.getY(), poi.z() + 0.5);
             boolean isWp = activeWp != null && activeWp.id().equals(poi.id());
+            if (!isWp && ClientDiscoveryCache.isTypeHidden(poi.type())) continue;
+            double distSq = client.player.squaredDistanceTo(poi.x() + 0.5, client.player.getY(), poi.z() + 0.5);
             if (!isWp && distSq > 280.0 * 280.0) continue;
 
             int argb = poi.type().getColor();

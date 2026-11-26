@@ -145,8 +145,14 @@ public class RegionScanner {
                     else if (biome.matchesKey(BiomeKeys.MUSHROOM_FIELDS)) label = "Mushroom Island";
 
                     if (label != null) {
-                        String id = "biome_" + label.toLowerCase().replace(" ", "_") + "_" + (x >> 6) + "_" + (z >> 6);
-                        if (state.getPois().stream().noneMatch(p -> p.id().equals(id))) {
+                        final String caveLabel = label;
+                        boolean nearbyExists = state.getPois().stream().anyMatch(p ->
+                                p.type() == PoiType.SPECIAL_CAVE &&
+                                        p.name().equals(caveLabel) &&
+                                        Math.hypot(p.x() - x, p.z() - z) < 280.0
+                        );
+                        if (!nearbyExists) {
+                            String id = "biome_" + label.toLowerCase().replace(" ", "_") + "_" + (x >> 6) + "_" + (z >> 6);
                             state.addPoi(new PoiData(id, label, PoiType.SPECIAL_CAVE, x, y, z, region.id(), biome.getIdAsString()));
                             added++;
                         }

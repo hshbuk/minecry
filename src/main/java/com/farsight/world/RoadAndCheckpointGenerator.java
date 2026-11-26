@@ -13,16 +13,16 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.IllagerEntity;
 import net.minecraft.loot.LootTables;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
-import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generates terrain-following Roads and fortified Pillager Road Checkpoints
- * inside an unlocked region, connecting the Tower to Checkpoints and Villages.
+ * Generates smoothed, walkable Roads with bridges, embankments, and lantern posts,
+ * plus fortified Pillager Road Checkpoints connected in a loop (no dead ends).
  */
 public class RoadAndCheckpointGenerator {
 
@@ -30,17 +30,15 @@ public class RoadAndCheckpointGenerator {
         List<PoiData> createdCheckpoints = new ArrayList<>();
         TowerTheme theme = TowerTheme.fromBiome(world.getBiome(new BlockPos(region.centerX(), 64, region.centerZ())));
 
-        // Place 2 Road Checkpoints at ~210 blocks along two different directions
         int[][] dirs = {{210, 80}, {-190, -110}};
-        List<BlockPos> roadNodes = new ArrayList<>();
-        roadNodes.add(new BlockPos(region.centerX(), 64, region.centerZ()));
+        List<BlockPos> cpPositions = new ArrayList<>();
 
         for (int i = 0; i < dirs.length; i++) {
             int cx = region.centerX() + dirs[i][0];
             int cz = region.centerZ() + dirs[i][1];
             if (!region.contains(cx, cz)) continue;
 
-            // Force chunk load & find ground height
+            world.getChunk(cx >> 4, cz >> 4);
             int cy = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, cx, cz);
             if (cy <= world.getSeaLevel()) continue;
 
@@ -58,9 +56,9 @@ public class RoadAndCheckpointGenerator {
             );
             state.addPoi(cpPoi);
             createdCheckpoints.add(cpPoi);
-            roadNodes.add(cpPos);
+            cpPositions.add(cpPos);
 
-            // Build physical road + record RoadData from Tower -> Checkpoint
+            // Road: Tower -> Checkpoint
             buildRoad(world, region.centerX(), region.centerZ(), cx, cz, theme);
             state.addRoad(new RoadData(
                     "road_tower_cp_" + i + "_" + cx + "_" + cz,
@@ -70,9 +68,11 @@ public class RoadAndCheckpointGenerator {
             ));
         }
 
-        // Also connect the Tower to any Villages inside this region with a road!
+        // Connect Checkpoints to Villages (or to each other) so roads form a real network with no dead ends
+        List<PoiData> villages = new ArrayList<>();
         for (PoiData poi : state.getPois()) {
             if (poi.type() == PoiType.VILLAGE && region.contains(poi.x(), poi.z())) {
+                villages.add(poi);
                 buildRoad(world, region.centerX(), region.centerZ(), poi.x(), poi.z(), theme);
                 state.addRoad(new RoadData(
                         "road_tower_vil_" + poi.x() + "_" + poi.z(),
@@ -81,6 +81,29 @@ public class RoadAndCheckpointGenerator {
                         region.id()
                 ));
             }
+        }
+
+        if (cpPositions.size() >= 2) {
+            BlockPos a = cpPositions.get(0);
+            BlockPos b = cpPositions.get(1);
+            buildRoad(world, a.getX(), a.getZ(), b.getX(), b.getZ(), theme);
+            state.addRoad(new RoadData(
+                    "road_cp_loop_" + a.getX() + "_" + b.getX(),
+                    a.getX(), a.getZ(),
+                    b.getX(), b.getZ(),
+                    region.id()
+            ));
+        }
+        if (!cpPositions.isEmpty() && !villages.isEmpty()) {
+            BlockPos cp = cpPositions.get(0);
+            PoiData v = villages.get(0);
+            buildRoad(world, cp.getX(), cp.getZ(), v.x(), v.z(), theme);
+            state.addRoad(new RoadData(
+                    "road_cp_vil_" + cp.getX() + "_" + v.x(),
+                    cp.getX(), cp.getZ(),
+                    v.x(), v.z(),
+                    region.id()
+            ));
         }
 
         return createdCheckpoints;
@@ -95,10 +118,9 @@ public class RoadAndCheckpointGenerator {
         BlockState wallMat = theme.accentStone.getDefaultState();
         BlockState fence = theme.fence.getDefaultState();
 
-        // Flatten 7x7 base pad
         for (int dx = -3; dx <= 3; dx++) {
             for (int dz = -3; dz <= 3; dz++) {
-                for (int dy = -2; dy <= 0; dy++) {
+                for (int dy = -3; dy <= 0; dy++) {
                     world.setBlockState(new BlockPos(bx + dx, by + dy, bz + dz), roadMat, 2);
                 }
                 for (int dy = 1; dy <= 4; dy++) {
@@ -107,7 +129,6 @@ public class RoadAndCheckpointGenerator {
             }
         }
 
-        // Sandbag/stone perimeter walls with open road gates on N/S
         for (int dx = -3; dx <= 3; dx++) {
             for (int dz = -3; dz <= 3; dz++) {
                 boolean edge = Math.abs(dx) == 3 || Math.abs(dz) == 3;
@@ -122,7 +143,6 @@ public class RoadAndCheckpointGenerator {
             }
         }
 
-        // Guard booth on West side
         for (int dy = 1; dy <= 3; dy++) {
             world.setBlockState(new BlockPos(bx - 2, by + dy, bz - 2), theme.pillar.getDefaultState(), 2);
             world.setBlockState(new BlockPos(bx - 2, by + dy, bz + 2), theme.pillar.getDefaultState(), 2);
@@ -131,18 +151,15 @@ public class RoadAndCheckpointGenerator {
             world.setBlockState(new BlockPos(bx - 2, by + 4, bz + dz), theme.planks.getDefaultState(), 2);
         }
 
-        // Loot Chest
         BlockPos chestPos = new BlockPos(bx - 2, by + 1, bz);
         world.setBlockState(chestPos, Blocks.CHEST.getDefaultState(), 2);
         if (world.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
             chest.setLootTable(LootTables.PILLAGER_OUTPOST_CHEST, world.random.nextLong());
         }
 
-        // Checkpoint Flag Block on East side
         world.setBlockState(new BlockPos(bx + 2, by + 1, bz), wallMat, 2);
         world.setBlockState(new BlockPos(bx + 2, by + 2, bz), ModBlocks.CHECKPOINT_FLAG.getDefaultState(), 2);
 
-        // Spawn 3 Pillager/Vindicator Guards
         spawnGuard(world, EntityType.PILLAGER, bx, by + 1, bz + 1);
         spawnGuard(world, EntityType.PILLAGER, bx + 1, by + 1, bz - 1);
         spawnGuard(world, EntityType.VINDICATOR, bx - 1, by + 1, bz);
@@ -158,30 +175,101 @@ public class RoadAndCheckpointGenerator {
         }
     }
 
+    /**
+     * Builds a smooth, walkable 3-wide road with slope clamping (max 1 block per step),
+     * stone-brick bridges over water, solid embankments over dips, air clearance, and lantern posts.
+     */
     private static void buildRoad(ServerWorld world, int x1, int z1, int x2, int z2, TowerTheme theme) {
         double dist = Math.hypot(x2 - x1, z2 - z1);
-        int steps = (int) Math.max(1, dist);
+        int steps = (int) Math.max(10, dist);
+        int seaLevel = world.getSeaLevel();
+
+        int[] xs = new int[steps + 1];
+        int[] zs = new int[steps + 1];
+        int[] rawY = new int[steps + 1];
+        boolean[] isWater = new boolean[steps + 1];
+
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            xs[i] = (int) Math.round(x1 + (x2 - x1) * t);
+            zs[i] = (int) Math.round(z1 + (z2 - z1) * t);
+            world.getChunk(xs[i] >> 4, zs[i] >> 4);
+            int top = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, xs[i], zs[i]) - 1;
+            isWater[i] = top <= seaLevel || world.getBlockState(new BlockPos(xs[i], top, zs[i])).isOf(Blocks.WATER);
+            rawY[i] = isWater[i] ? seaLevel + 1 : top;
+        }
+
+        // Smooth & clamp slope to max +-1 block per step so it's always walkable!
+        int[] roadY = new int[steps + 1];
+        roadY[0] = rawY[0];
+        for (int i = 1; i <= steps; i++) {
+            int sum = 0, count = 0;
+            for (int k = -2; k <= 2; k++) {
+                int idx = Math.max(0, Math.min(steps, i + k));
+                sum += rawY[idx];
+                count++;
+            }
+            int avg = Math.round(sum / (float) count);
+            if (isWater[i]) avg = Math.max(avg, seaLevel + 1);
+            int diff = avg - roadY[i - 1];
+            if (diff > 1) roadY[i] = roadY[i - 1] + 1;
+            else if (diff < -1) roadY[i] = roadY[i - 1] - 1;
+            else roadY[i] = avg;
+        }
+
         BlockState roadPrimary = (theme == TowerTheme.DESERT || theme == TowerTheme.BADLANDS)
                 ? Blocks.SMOOTH_SANDSTONE.getDefaultState() : Blocks.GRAVEL.getDefaultState();
-        BlockState roadBorder = Blocks.COBBLESTONE.getDefaultState();
+        BlockState roadEdge = theme.primaryStone.getDefaultState();
+        BlockState bridgeDeck = theme.planks.getDefaultState();
+        BlockState bridgeEdge = Blocks.STONE_BRICKS.getDefaultState();
+        BlockState support = Blocks.COBBLESTONE.getDefaultState();
+        BlockState air = Blocks.AIR.getDefaultState();
 
-        for (int i = 6; i <= steps - 4; i++) {
-            double t = i / (double) steps;
-            int rx = (int) Math.round(x1 + (x2 - x1) * t);
-            int rz = (int) Math.round(z1 + (z2 - z1) * t);
+        // Perpendicular direction for road width
+        double dx = (x2 - x1) / dist;
+        double dz = (z2 - z1) / dist;
+        double perpX = -dz;
+        double perpZ = dx;
 
-            for (int ox = -1; ox <= 1; ox++) {
-                for (int oz = -1; oz <= 1; oz++) {
-                    int px = rx + ox;
-                    int pz = rz + oz;
-                    int py = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, px, pz) - 1;
-                    if (py < world.getSeaLevel()) continue;
-                    BlockPos pos = new BlockPos(px, py, pz);
-                    BlockState existing = world.getBlockState(pos);
-                    if (existing.isAir() || existing.isOf(Blocks.WATER)) continue;
-                    boolean isCenter = (ox == 0 || oz == 0);
-                    world.setBlockState(pos, isCenter ? roadPrimary : roadBorder, 2);
+        for (int i = 6; i <= steps - 5; i++) {
+            int y = roadY[i];
+            boolean bridge = isWater[i] || (y - rawY[i] >= 2);
+
+            for (int w = -1; w <= 1; w++) {
+                int px = (int) Math.round(xs[i] + perpX * w);
+                int pz = (int) Math.round(zs[i] + perpZ * w);
+                BlockState surface = bridge ? (w == 0 ? bridgeDeck : bridgeEdge) : (w == 0 ? roadPrimary : roadEdge);
+
+                world.setBlockState(new BlockPos(px, y, pz), surface, 2);
+
+                // Clear headroom above the road
+                for (int dy = 1; dy <= 3; dy++) {
+                    world.setBlockState(new BlockPos(px, y + dy, pz), air, 2);
                 }
+
+                // Fill solid embankment/pillars underneath so there are zero floating gaps
+                int ground = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, px, pz) - 1;
+                if (ground < y) {
+                    int fillDepth = bridge && (w == 0 || i % 5 != 0) ? 1 : Math.min(12, y - ground + 1);
+                    for (int dy = 1; dy <= fillDepth; dy++) {
+                        world.setBlockState(new BlockPos(px, y - dy, pz), support, 2);
+                    }
+                }
+
+                // Bridge railings
+                if (bridge && Math.abs(w) == 1) {
+                    world.setBlockState(new BlockPos(px, y + 1, pz), theme.fence.getDefaultState(), 2);
+                }
+            }
+
+            // Roadside lantern post every 26 blocks
+            if (!bridge && i % 26 == 0) {
+                int lx = (int) Math.round(xs[i] + perpX * 2.0);
+                int lz = (int) Math.round(zs[i] + perpZ * 2.0);
+                world.setBlockState(new BlockPos(lx, y, lz), roadEdge, 2);
+                world.setBlockState(new BlockPos(lx, y + 1, lz), theme.fence.getDefaultState(), 2);
+                world.setBlockState(new BlockPos(lx, y + 2, lz), theme.fence.getDefaultState(), 2);
+                world.setBlockState(new BlockPos(lx, y + 3, lz), theme.lantern.getDefaultState(), 2);
             }
         }
     }
