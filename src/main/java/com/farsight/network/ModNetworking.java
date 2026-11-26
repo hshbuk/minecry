@@ -139,6 +139,7 @@ public class ModNetworking {
 
     public static void syncPlayer(ServerPlayerEntity player) {
         if (player.getWorld() instanceof ServerWorld serverWorld) {
+            com.farsight.world.TowerLocator.ensureNearbyTowersMarked(serverWorld, player.getBlockPos());
             DiscoveryState state = DiscoveryState.get(serverWorld);
             ServerPlayNetworking.send(player, new SyncDiscoveryPayload(
                     new ArrayList<>(state.getRegions()),
