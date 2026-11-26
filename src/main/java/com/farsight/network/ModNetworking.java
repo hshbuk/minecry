@@ -2,15 +2,19 @@ package com.farsight.network;
 
 import com.farsight.FarSightMod;
 import com.farsight.data.DiscoveryState;
+import com.farsight.data.PlayerProgress;
+import com.farsight.data.PlayerProgressState;
 import com.farsight.data.PoiData;
 import com.farsight.data.PoiType;
 import com.farsight.data.RegionData;
 import com.farsight.data.RoadData;
+import com.farsight.registry.ModItems;
 import com.farsight.world.CutsceneManager;
 import com.farsight.world.TowerActivationHandler;
 import com.farsight.world.TowerLocator;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -193,14 +197,56 @@ public class ModNetworking {
         }
     }
 
+    public record SyncProgressPayload(PlayerProgress progress) implements CustomPayload {
+        public static final Id<SyncProgressPayload> ID = new Id<>(Identifier.of(FarSightMod.MOD_ID, "sync_progress"));
+        public static final PacketCodec<RegistryByteBuf, SyncProgressPayload> CODEC = PacketCodec.of(
+                (v, buf) -> v.progress.writeToBuf(buf),
+                buf -> new SyncProgressPayload(PlayerProgress.readFromBuf(buf))
+        );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+
+    public record UpgradeSkillPayload(int skillIndex) implements CustomPayload {
+        public static final Id<UpgradeSkillPayload> ID = new Id<>(Identifier.of(FarSightMod.MOD_ID, "upgrade_skill"));
+        public static final PacketCodec<RegistryByteBuf, UpgradeSkillPayload> CODEC = PacketCodec.of(
+                (v, buf) -> buf.writeInt(v.skillIndex),
+                buf -> new UpgradeSkillPayload(buf.readInt())
+        );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+
+    public record BuyWeaponPayload(int weaponIndex) implements CustomPayload {
+        public static final Id<BuyWeaponPayload> ID = new Id<>(Identifier.of(FarSightMod.MOD_ID, "buy_weapon"));
+        public static final PacketCodec<RegistryByteBuf, BuyWeaponPayload> CODEC = PacketCodec.of(
+                (v, buf) -> buf.writeInt(v.weaponIndex),
+                buf -> new BuyWeaponPayload(buf.readInt())
+        );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
+    }
+
     public static void registerPayloads() {
         PayloadTypeRegistry.playS2C().register(SyncDiscoveryPayload.ID, SyncDiscoveryPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(OpenPuzzlePayload.ID, OpenPuzzlePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(RegionUnlockedPayload.ID, RegionUnlockedPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(CutsceneHudPayload.ID, CutsceneHudPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(SyncProgressPayload.ID, SyncProgressPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SolvePuzzlePayload.ID, SolvePuzzlePayload.CODEC);
         PayloadTypeRegistry.playC2S().register(FastTravelPayload.ID, FastTravelPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SkipCutscenePayload.ID, SkipCutscenePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(UpgradeSkillPayload.ID, UpgradeSkillPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(BuyWeaponPayload.ID, BuyWeaponPayload.CODEC);
     }
 
     public static void registerServerReceivers() {
@@ -222,6 +268,60 @@ public class ModNetworking {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> CutsceneManager.skip(player));
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(UpgradeSkillPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> {
+                if (player.getWorld() instanceof ServerWorld sw) {
+                    if (PlayerProgressState.get(sw).upgradeSkill(player, payload.skillIndex())) {
+                        sw.playSound(null, player.getBlockPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 0.7f, 1.3f);
+                        syncProgress(player);
+                    }
+                }
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(BuyWeaponPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> handleBuyWeapon(player, payload.weaponIndex()));
+        });
+    }
+
+    private static void handleBuyWeapon(ServerPlayerEntity player, int weaponIndex) {
+        if (!(player.getWorld() instanceof ServerWorld sw)) return;
+        PlayerProgressState state = PlayerProgressState.get(sw);
+        PlayerProgress prog = state.getOrCreate(player.getUuid());
+        int cost = switch (weaponIndex) {
+            case 0 -> 200; // Tactical Machete
+            case 1 -> 300; // Hunter Bow
+            case 2 -> 450; // Flare Launcher
+            default -> 999999;
+        };
+        if (prog.score < cost) {
+            player.sendMessage(Text.translatable("message.farsight.armory.not_enough", cost).formatted(Formatting.RED), true);
+            return;
+        }
+        ItemStack stack = switch (weaponIndex) {
+            case 0 -> new ItemStack(ModItems.TACTICAL_MACHETE);
+            case 1 -> new ItemStack(ModItems.HUNTER_BOW);
+            case 2 -> new ItemStack(ModItems.FLARE_LAUNCHER);
+            default -> ItemStack.EMPTY;
+        };
+        if (stack.isEmpty()) return;
+
+        prog.score -= cost;
+        state.markDirty();
+        player.getInventory().offerOrDrop(stack);
+        sw.playSound(null, player.getBlockPos(), SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND.value(), SoundCategory.PLAYERS, 1.0f, 1.1f);
+        syncProgress(player);
+    }
+
+    public static void syncProgress(ServerPlayerEntity player) {
+        if (player.getWorld() instanceof ServerWorld sw) {
+            PlayerProgressState state = PlayerProgressState.get(sw);
+            state.applyAttributes(player);
+            ServerPlayNetworking.send(player, new SyncProgressPayload(state.getOrCreate(player.getUuid())));
+        }
     }
 
     private static void handleFastTravel(ServerPlayerEntity player, String poiId) {

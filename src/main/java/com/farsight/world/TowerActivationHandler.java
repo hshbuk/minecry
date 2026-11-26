@@ -56,6 +56,7 @@ public class TowerActivationHandler {
         // 3. Unlock Region in DiscoveryState
         DiscoveryState discovery = DiscoveryState.get(world);
         String regionId = "region_" + pos.getX() + "_" + pos.getZ();
+        int tier = terminal.getTier();
         RegionData region = new RegionData(
                 regionId,
                 terminal.getRegionName(),
@@ -64,7 +65,8 @@ public class TowerActivationHandler {
                 pos.getZ(),
                 terminal.getRadius(),
                 world.getTime(),
-                player.getName().getString()
+                player.getName().getString(),
+                tier
         );
         discovery.addRegion(region);
 
@@ -73,7 +75,7 @@ public class TowerActivationHandler {
                 Math.hypot(p.x() - pos.getX(), p.z() - pos.getZ()) < 64.0);
         discovery.addPoi(new PoiData(
                 "claimed_" + pos.getX() + "_" + pos.getZ(),
-                terminal.getRegionName() + " Tower",
+                terminal.getRegionName() + " Tower [★" + tier + "]",
                 PoiType.TOWER_CLAIMED,
                 pos.getX(),
                 pos.getY(),
@@ -89,7 +91,11 @@ public class TowerActivationHandler {
         var checkpoints = RoadAndCheckpointGenerator.generateRoadsAndCheckpoints(world, discovery, region);
         revealed += checkpoints.size();
 
-        // 6. Sync to all players, trigger Region Unlocked banner, and start Far Cry flyover cutscene!
+        // 6. Award Score & Skill Point to player
+        com.farsight.data.PlayerProgressState.get(world).addScore(player, 500 * tier, 1);
+        ModNetworking.syncProgress(player);
+
+        // 7. Sync to all players, trigger Region Unlocked banner, and start Far Cry flyover cutscene!
         ModNetworking.syncAllPlayers(world);
         for (ServerPlayerEntity p : world.getPlayers()) {
             ServerPlayNetworking.send(p, new ModNetworking.RegionUnlockedPayload(

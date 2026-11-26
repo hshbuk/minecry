@@ -87,6 +87,9 @@ public class CheckpointFlagBlock extends Block {
                 serverWorld.getBiome(pos).getIdAsString()
         ));
         ModNetworking.syncAllPlayers(serverWorld);
+        int tier = com.farsight.world.TierCalculator.getTierForPos(pos);
+        com.farsight.data.PlayerProgressState.get(serverWorld).addScore(serverPlayer, 200 * tier, 1);
+        ModNetworking.syncProgress(serverPlayer);
 
         serverPlayer.sendMessage(Text.translatable("message.farsight.checkpoint.liberated").formatted(Formatting.GREEN), true);
         return ActionResult.SUCCESS;

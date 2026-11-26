@@ -93,6 +93,15 @@ public class CompassHudRenderer {
         // Center notch
         context.fill(centerX - 1, barTop - 2, centerX + 1, barTop + 2, 0xFF00E5FF);
 
+        // Top-left RPG Level / Score / Tier Badge
+        var prog = ClientDiscoveryCache.getProgress();
+        int regionTier = com.farsight.world.TierCalculator.getTierForCoords((int) player.getX(), (int) player.getZ());
+        String badge = "LVL " + prog.level + " | " + prog.score + " PTS | " + prog.skillPoints + " SP [U] | ★" + regionTier;
+        int bw = tr.getWidth(badge) + 8;
+        context.fill(6, 6, 6 + bw, 20, 0x880B1016);
+        context.drawBorder(6, 6, bw, 14, 0x6600E5FF);
+        context.drawTextWithShadow(tr, badge, 10, 9, 0xFFFFCC00);
+
         // Active Waypoint distance readout under compass
         if (activeWp != null) {
             int dist = (int) Math.hypot(activeWp.x() - player.getX(), activeWp.z() - player.getZ());

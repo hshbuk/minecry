@@ -56,6 +56,27 @@ public class FarSightMod implements ModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ModNetworking.syncPlayer(handler.getPlayer());
+            ModNetworking.syncProgress(handler.getPlayer());
+        });
+
+        // Scale hostile mobs by region/distance Tier
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof net.minecraft.entity.mob.HostileEntity hostile) {
+                int tier = com.farsight.world.TierCalculator.getTierForPos(hostile.getBlockPos());
+                com.farsight.world.TierCalculator.scaleHostileMob(hostile, tier);
+            }
+        });
+
+        // Award Score when players defeat enemies
+        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
+            if (damageSource.getAttacker() instanceof net.minecraft.server.network.ServerPlayerEntity player &&
+                    entity instanceof net.minecraft.entity.mob.HostileEntity &&
+                    player.getWorld() instanceof ServerWorld sw) {
+                int tier = com.farsight.world.TierCalculator.getTierForPos(entity.getBlockPos());
+                int pts = (entity instanceof net.minecraft.entity.mob.IllagerEntity ? 50 : 15) * tier;
+                com.farsight.data.PlayerProgressState.get(sw).addScore(player, pts, 0);
+                ModNetworking.syncProgress(player);
+            }
         });
 
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {

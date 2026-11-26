@@ -21,6 +21,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class FarSightClient implements ClientModInitializer {
     private static KeyBinding openMapKey;
+    private static KeyBinding openUpgradesKey;
 
     @Override
     public void onInitializeClient() {
@@ -30,6 +31,12 @@ public class FarSightClient implements ClientModInitializer {
                 "key.farsight.world_map",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_M,
+                "category.farsight"
+        ));
+        openUpgradesKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.farsight.upgrades",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_U,
                 "category.farsight"
         ));
 
@@ -51,6 +58,10 @@ public class FarSightClient implements ClientModInitializer {
             context.client().execute(() -> ClientDiscoveryCache.setCutscene(payload.active(), payload.title(), payload.subtitle()));
         });
 
+        ClientPlayNetworking.registerGlobalReceiver(ModNetworking.SyncProgressPayload.ID, (payload, context) -> {
+            context.client().execute(() -> ClientDiscoveryCache.setProgress(payload.progress()));
+        });
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             ClientDiscoveryCache.tick();
             if (ClientDiscoveryCache.isCutsceneActive() && client.options.jumpKey.wasPressed()) {
@@ -59,6 +70,11 @@ public class FarSightClient implements ClientModInitializer {
             while (openMapKey.wasPressed()) {
                 if (client.currentScreen == null && !ClientDiscoveryCache.isCutsceneActive()) {
                     client.setScreen(new WorldMapScreen());
+                }
+            }
+            while (openUpgradesKey.wasPressed()) {
+                if (client.currentScreen == null && !ClientDiscoveryCache.isCutsceneActive()) {
+                    client.setScreen(new com.farsight.client.screen.UpgradesScreen());
                 }
             }
         });

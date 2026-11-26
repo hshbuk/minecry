@@ -5,7 +5,11 @@
   "block.farsight.tower_barrier": "Tower Security Barrier",
   "block.farsight.checkpoint_flag": "Checkpoint Flag",
   "item.farsight.scout_binoculars": "Scout Binoculars",
+  "item.farsight.tactical_machete": "Tactical Machete",
+  "item.farsight.hunter_bow": "Recurve Hunter Bow",
+  "item.farsight.flare_launcher": "Flare Launcher",
   "key.farsight.world_map": "Open Discovery World Map",
+  "key.farsight.upgrades": "Open Skills & Armory",
   "category.farsight": "FarSight: World Discovery",
 
   "screen.farsight.puzzle.title": "Tower Signal Alignment",
@@ -18,6 +22,7 @@
   "screen.farsight.map.center": "Center on Me",
   "screen.farsight.map.clear_wp": "Clear Waypoint",
   "screen.farsight.map.fast_travel": "Fast Travel",
+  "screen.farsight.upgrades.title": "FarSight Skills & Armory",
   "screen.farsight.map.click_wp": "Click to Track / Untrack Waypoint",
   "screen.farsight.map.controls": "Drag to Pan  |  Scroll to Zoom  |  Click POI for Waypoint",
 
@@ -37,5 +42,7 @@
   "message.farsight.checkpoint.locked": "Locked! Defeat %d Pillager guard(s) at this Checkpoint first.",
   "message.farsight.checkpoint.liberated": "Checkpoint liberated! Fast Travel unlocked.",
   "message.farsight.fast_travel.locked": "Fast Travel is only available to claimed Towers & liberated Checkpoints.",
-  "message.farsight.fast_travel.arrived": "Fast Traveled to %s"
+  "message.farsight.fast_travel.arrived": "Fast Traveled to %s",
+  "message.farsight.level_up": "LEVEL UP! You reached Level %d (+1 Skill Point)",
+  "message.farsight.armory.not_enough": "Not enough Score! Need %d PTS."
 }

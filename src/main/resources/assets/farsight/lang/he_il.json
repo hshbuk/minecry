@@ -5,7 +5,11 @@
   "block.farsight.tower_barrier": "מחסום אבטחה למגדל",
   "block.farsight.checkpoint_flag": "דגל צ'קפוינט",
   "item.farsight.scout_binoculars": "משקפת סיור",
+  "item.farsight.tactical_machete": "מצ'טה טקטית",
+  "item.farsight.hunter_bow": "קשת ציידים מתקדמת",
+  "item.farsight.flare_launcher": "משגר נורים מתפוצצים",
   "key.farsight.world_map": "פתח מפת עולם (FarSight)",
+  "key.farsight.upgrades": "פתח שדרוגים ונשקייה",
   "category.farsight": "FarSight: גילוי עולם",
 
   "screen.farsight.puzzle.title": "סנכרון תדר המגדל",
@@ -18,6 +22,7 @@
   "screen.farsight.map.center": "מרכז עליי",
   "screen.farsight.map.clear_wp": "נקה יעד",
   "screen.farsight.map.fast_travel": "טלפורט (Fast Travel)",
+  "screen.farsight.upgrades.title": "שדרוגים ונשקייה (FarSight)",
   "screen.farsight.map.click_wp": "לחץ לסימון / ביטול יעד (Waypoint)",
   "screen.farsight.map.controls": "גרור להזזה  |  גלגלת לזום  |  לחץ על אייקון לסימון יעד",
 
@@ -37,5 +42,7 @@
   "message.farsight.checkpoint.locked": "נעול! חסל %d שומרי פילג'ר בצ'קפוינט קודם.",
   "message.farsight.checkpoint.liberated": "הצ'קפוינט שוחרר! טלפורט נפתח.",
   "message.farsight.fast_travel.locked": "טלפורט אפשרי רק למגדלים כבושים או צ'קפוינטים משוחררים.",
-  "message.farsight.fast_travel.arrived": "הגעת בטלפורט אל %s"
+  "message.farsight.fast_travel.arrived": "הגעת בטלפורט אל %s",
+  "message.farsight.level_up": "עלית רמה! הגעת לרמה %d (+1 נקודת מיומנות)",
+  "message.farsight.armory.not_enough": "אין מספיק נקודות! נדרשות %d נקודות."
 }

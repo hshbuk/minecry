@@ -18,6 +18,24 @@ public class ModItems {
             new ScoutBinocularsItem(new Item.Settings().maxCount(1))
     );
 
+    public static final Item TACTICAL_MACHETE = Registry.register(
+            Registries.ITEM,
+            Identifier.of(FarSightMod.MOD_ID, "tactical_machete"),
+            new com.farsight.item.TacticalMacheteItem(new Item.Settings().maxCount(1).maxDamage(1200))
+    );
+
+    public static final Item HUNTER_BOW = Registry.register(
+            Registries.ITEM,
+            Identifier.of(FarSightMod.MOD_ID, "hunter_bow"),
+            new com.farsight.item.HunterBowItem(new Item.Settings().maxCount(1).maxDamage(650))
+    );
+
+    public static final Item FLARE_LAUNCHER = Registry.register(
+            Registries.ITEM,
+            Identifier.of(FarSightMod.MOD_ID, "flare_launcher"),
+            new com.farsight.item.FlareLauncherItem(new Item.Settings().maxCount(1).maxDamage(180))
+    );
+
     public static final ItemGroup FARSIGHT_GROUP = Registry.register(
             Registries.ITEM_GROUP,
             Identifier.of(FarSightMod.MOD_ID, "farsight_group"),
@@ -26,6 +44,9 @@ public class ModItems {
                     .displayName(Text.translatable("itemGroup.farsight"))
                     .entries((context, entries) -> {
                         entries.add(SCOUT_BINOCULARS);
+                        entries.add(TACTICAL_MACHETE);
+                        entries.add(HUNTER_BOW);
+                        entries.add(FLARE_LAUNCHER);
                         entries.add(ModBlocks.TOWER_TERMINAL);
                         entries.add(ModBlocks.SIGNAL_RELAY);
                         entries.add(ModBlocks.TOWER_BARRIER);

@@ -160,12 +160,15 @@ public class TowerPiece extends StructurePiece {
         // Security Barrier sealing the roof hatch above the top ladder at (baseX+2, baseY+21, baseZ+2)
         setBlockIfInBox(world, chunkBox, baseX + 2, baseY + 21, baseZ + 2, ModBlocks.TOWER_BARRIER.getDefaultState());
 
-        // 4. Loot Chest on Floor 4
+        // 4. Loot Chest on Floor 4 (scaled by Region Tier!)
+        int tier = TierCalculator.getTierForPos(origin);
         BlockPos chestPos = new BlockPos(baseX - 2, f4, baseZ + 2);
         if (chunkBox.contains(chestPos)) {
             world.setBlockState(chestPos, Blocks.CHEST.getDefaultState(), 2);
             if (world.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
-                chest.setLootTable(LootTables.PILLAGER_OUTPOST_CHEST, random.nextLong());
+                var loot = tier >= 4 ? LootTables.BASTION_TREASURE_CHEST
+                        : (tier >= 2 ? LootTables.WOODLAND_MANSION_CHEST : LootTables.PILLAGER_OUTPOST_CHEST);
+                chest.setLootTable(loot, random.nextLong());
             }
         }
 
@@ -194,7 +197,7 @@ public class TowerPiece extends StructurePiece {
                     2);
             if (world.getBlockEntity(terminalPos) instanceof TowerTerminalBlockEntity be) {
                 String regionName = theme.defaultRegionName + " (" + (baseX / 100) + "," + (baseZ / 100) + ")";
-                be.configure(theme.id, regionName, 512, terminalPos.asLong());
+                be.configure(theme.id, regionName, 512, terminalPos.asLong(), tier);
             }
         }
 
@@ -204,12 +207,21 @@ public class TowerPiece extends StructurePiece {
         }
         setBlockIfInBox(world, chunkBox, baseX, roofY + 7, baseZ - 2, Blocks.LIGHTNING_ROD.getDefaultState());
 
-        // 7. Spawn Tethered Pillager Guards (anchored to their posts so they never flee or jump off!)
-        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX + 1, baseY + 1, baseZ + 1);
-        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX - 1, f2, baseZ - 1);
-        spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 1, f3, baseZ - 1);
-        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX, f4, baseZ);
-        spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 2, roofY, baseZ);
+        // 7. Spawn Tethered Pillager Guards (scaled by Tier!)
+        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX + 1, baseY + 1, baseZ + 1, tier);
+        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX - 1, f2, baseZ - 1, tier);
+        spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 1, f3, baseZ - 1, tier);
+        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX, f4, baseZ, tier);
+        spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 2, roofY, baseZ, tier);
+        if (tier >= 2) {
+            spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX - 1, f2, baseZ + 1, tier);
+        }
+        if (tier >= 3) {
+            spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX + 1, f4, baseZ - 1, tier);
+        }
+        if (tier >= 4) {
+            spawnGuard(world, chunkBox, EntityType.EVOKER, baseX - 2, roofY, baseZ, tier);
+        }
     }
 
     private void setBlockIfInBox(StructureWorldAccess world, BlockBox box, int x, int y, int z, BlockState state) {
@@ -219,7 +231,7 @@ public class TowerPiece extends StructurePiece {
         }
     }
 
-    private void spawnGuard(StructureWorldAccess world, BlockBox box, EntityType<? extends IllagerEntity> type, int x, int y, int z) {
+    private void spawnGuard(StructureWorldAccess world, BlockBox box, EntityType<? extends IllagerEntity> type, int x, int y, int z, int tier) {
         BlockPos pos = new BlockPos(x, y, z);
         if (!box.contains(pos)) return;
         IllagerEntity mob = type.create(world.toServerWorld());
@@ -229,6 +241,7 @@ public class TowerPiece extends StructurePiece {
             mob.setPositionTarget(pos, 4);
             mob.refreshPositionAndAngles(x + 0.5, y, z + 0.5, 0.0f, 0.0f);
             mob.initialize(world, world.getLocalDifficulty(pos), SpawnReason.STRUCTURE, null);
+            TierCalculator.scaleHostileMob(mob, tier);
             world.spawnEntityAndPassengers(mob);
         }
     }

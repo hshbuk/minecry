@@ -70,9 +70,10 @@ public class TowerLocator {
             if (!alreadyMarked && state.getPois().stream().noneMatch(p -> p.id().equals(claimedId))) {
                 String biomeId = world.getBiome(tower).getIdAsString();
                 TowerTheme theme = TowerTheme.fromBiome(world.getBiome(tower));
+                int tier = TierCalculator.getTierForCoords(tower.getX(), tower.getZ());
                 state.addPoi(new PoiData(
                         unclaimedId,
-                        theme.defaultRegionName + " Tower",
+                        theme.defaultRegionName + " Tower [★" + tier + "]",
                         PoiType.TOWER_UNCLAIMED,
                         tower.getX(),
                         Math.max(tower.getY(), 64) + 20,

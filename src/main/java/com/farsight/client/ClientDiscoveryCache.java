@@ -1,5 +1,6 @@
 package com.farsight.client;
 
+import com.farsight.data.PlayerProgress;
 import com.farsight.data.PoiData;
 import com.farsight.data.PoiType;
 import com.farsight.data.RegionData;
@@ -16,6 +17,15 @@ public class ClientDiscoveryCache {
     private static List<RoadData> roads = new ArrayList<>();
     private static final Set<PoiType> hiddenTypes = EnumSet.noneOf(PoiType.class);
     private static PoiData activeWaypoint = null;
+    private static PlayerProgress progress = new PlayerProgress();
+
+    public static PlayerProgress getProgress() {
+        return progress;
+    }
+
+    public static void setProgress(PlayerProgress newProgress) {
+        progress = newProgress;
+    }
 
     private static String bannerRegionName = "";
     private static int bannerPoisCount = 0;

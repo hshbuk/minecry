@@ -43,12 +43,12 @@ public class RoadAndCheckpointGenerator {
             if (cy <= world.getSeaLevel()) continue;
 
             BlockPos cpPos = new BlockPos(cx, cy, cz);
-            buildCheckpoint(world, cpPos, theme);
+            buildCheckpoint(world, cpPos, theme, region.tier());
 
             String cpId = "cp_" + cx + "_" + cz;
             PoiData cpPoi = new PoiData(
                     cpId,
-                    "Road Checkpoint",
+                    "Road Checkpoint [★" + region.tier() + "]",
                     PoiType.CHECKPOINT_LOCKED,
                     cx, cy + 1, cz,
                     region.id(),
@@ -110,6 +110,10 @@ public class RoadAndCheckpointGenerator {
     }
 
     public static void buildCheckpoint(ServerWorld world, BlockPos center, TowerTheme theme) {
+        buildCheckpoint(world, center, theme, TierCalculator.getTierForPos(center));
+    }
+
+    public static void buildCheckpoint(ServerWorld world, BlockPos center, TowerTheme theme, int tier) {
         int bx = center.getX();
         int by = center.getY();
         int bz = center.getZ();
@@ -160,17 +164,24 @@ public class RoadAndCheckpointGenerator {
         world.setBlockState(new BlockPos(bx + 2, by + 1, bz), wallMat, 2);
         world.setBlockState(new BlockPos(bx + 2, by + 2, bz), ModBlocks.CHECKPOINT_FLAG.getDefaultState(), 2);
 
-        spawnGuard(world, EntityType.PILLAGER, bx, by + 1, bz + 1);
-        spawnGuard(world, EntityType.PILLAGER, bx + 1, by + 1, bz - 1);
-        spawnGuard(world, EntityType.VINDICATOR, bx - 1, by + 1, bz);
+        spawnGuard(world, EntityType.PILLAGER, bx, by + 1, bz + 1, tier);
+        spawnGuard(world, EntityType.PILLAGER, bx + 1, by + 1, bz - 1, tier);
+        spawnGuard(world, EntityType.VINDICATOR, bx - 1, by + 1, bz, tier);
+        if (tier >= 2) {
+            spawnGuard(world, EntityType.PILLAGER, bx, by + 1, bz - 1, tier);
+        }
+        if (tier >= 4) {
+            spawnGuard(world, EntityType.EVOKER, bx + 1, by + 1, bz + 1, tier);
+        }
     }
 
-    private static void spawnGuard(ServerWorld world, EntityType<? extends IllagerEntity> type, int x, int y, int z) {
+    private static void spawnGuard(ServerWorld world, EntityType<? extends IllagerEntity> type, int x, int y, int z, int tier) {
         IllagerEntity mob = type.create(world);
         if (mob != null) {
             mob.setPersistent();
             mob.refreshPositionAndAngles(x + 0.5, y, z + 0.5, 0, 0);
             mob.initialize(world, world.getLocalDifficulty(new BlockPos(x, y, z)), SpawnReason.STRUCTURE, null);
+            TierCalculator.scaleHostileMob(mob, tier);
             world.spawnEntityAndPassengers(mob);
         }
     }

@@ -13,18 +13,25 @@ public class TowerTerminalBlockEntity extends BlockEntity {
     private int radius = 512;
     private boolean activated = false;
     private long puzzleSeed = 0L;
+    private int tier = 1;
 
     public TowerTerminalBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.TOWER_TERMINAL_BE, pos, state);
         this.puzzleSeed = pos.asLong();
+        this.tier = com.farsight.world.TierCalculator.getTierForPos(pos);
     }
 
-    public void configure(String biomeTheme, String regionName, int radius, long puzzleSeed) {
+    public void configure(String biomeTheme, String regionName, int radius, long puzzleSeed, int tier) {
         this.biomeTheme = biomeTheme;
         this.regionName = regionName;
         this.radius = radius;
         this.puzzleSeed = puzzleSeed;
+        this.tier = tier;
         markDirty();
+    }
+
+    public int getTier() {
+        return tier;
     }
 
     public String getBiomeTheme() {
@@ -60,6 +67,7 @@ public class TowerTerminalBlockEntity extends BlockEntity {
         nbt.putInt("radius", radius);
         nbt.putBoolean("activated", activated);
         nbt.putLong("puzzleSeed", puzzleSeed);
+        nbt.putInt("tier", tier);
     }
 
     @Override
@@ -70,5 +78,6 @@ public class TowerTerminalBlockEntity extends BlockEntity {
         if (nbt.contains("radius")) radius = nbt.getInt("radius");
         activated = nbt.getBoolean("activated");
         if (nbt.contains("puzzleSeed")) puzzleSeed = nbt.getLong("puzzleSeed");
+        if (nbt.contains("tier")) tier = Math.max(1, nbt.getInt("tier"));
     }
 }

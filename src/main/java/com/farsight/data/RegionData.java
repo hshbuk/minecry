@@ -11,7 +11,8 @@ public record RegionData(
         int centerZ,
         int radius,
         long unlockedAt,
-        String unlockedBy
+        String unlockedBy,
+        int tier
 ) {
     public boolean contains(double x, double z) {
         double dx = x - centerX;
@@ -29,10 +30,12 @@ public record RegionData(
         nbt.putInt("radius", radius);
         nbt.putLong("unlockedAt", unlockedAt);
         nbt.putString("unlockedBy", unlockedBy);
+        nbt.putInt("tier", tier);
         return nbt;
     }
 
     public static RegionData fromNbt(NbtCompound nbt) {
+        int tier = nbt.contains("tier") ? Math.max(1, nbt.getInt("tier")) : 1;
         return new RegionData(
                 nbt.getString("id"),
                 nbt.getString("name"),
@@ -41,7 +44,8 @@ public record RegionData(
                 nbt.getInt("centerZ"),
                 nbt.getInt("radius"),
                 nbt.getLong("unlockedAt"),
-                nbt.getString("unlockedBy")
+                nbt.getString("unlockedBy"),
+                tier
         );
     }
 
@@ -54,6 +58,7 @@ public record RegionData(
         buf.writeInt(radius);
         buf.writeLong(unlockedAt);
         buf.writeString(unlockedBy);
+        buf.writeInt(tier);
     }
 
     public static RegionData readFromBuf(PacketByteBuf buf) {
@@ -65,7 +70,8 @@ public record RegionData(
                 buf.readInt(),
                 buf.readInt(),
                 buf.readLong(),
-                buf.readString()
+                buf.readString(),
+                buf.readInt()
         );
     }
 }

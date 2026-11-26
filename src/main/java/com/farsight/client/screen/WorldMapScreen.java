@@ -78,7 +78,13 @@ public class WorldMapScreen extends Screen {
                 );
                 close();
             }
-        }).dimensions(mapLeft + 198, height - 23, 96, 18).build());
+        }).dimensions(mapLeft + 198, height - 23, 84, 18).build());
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("Upgrades (U)"), btn -> {
+            if (client != null) {
+                client.setScreen(new UpgradesScreen());
+            }
+        }).dimensions(mapLeft + 286, height - 23, 84, 18).build());
     }
 
     @Override
@@ -223,7 +229,7 @@ public class WorldMapScreen extends Screen {
         }
 
         // Footer hint (fitted so it never clips on smaller GUI scales)
-        int hintX = mapLeft + 300;
+        int hintX = mapLeft + 374;
         if (hintX + 100 < sideLeft) {
             context.drawTextWithShadow(textRenderer, "Drag: Pan | Scroll: Zoom", hintX, height - 18, 0xFF90A4AE);
         }
