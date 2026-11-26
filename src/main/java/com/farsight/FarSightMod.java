@@ -58,9 +58,26 @@ public class FarSightMod implements ModInitializer {
             ModNetworking.syncPlayer(handler.getPlayer());
         });
 
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(
-                com.farsight.world.CutsceneManager::tick
-        );
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+            com.farsight.world.CutsceneManager.tick(server);
+            if (server.getTicks() % 10 == 0) {
+                for (ServerWorld world : server.getWorlds()) {
+                    for (var player : world.getPlayers()) {
+                        var box = player.getBoundingBox().expand(48);
+                        for (var illager : world.getEntitiesByClass(
+                                net.minecraft.entity.mob.IllagerEntity.class, box,
+                                e -> e.isAlive() && e.getCommandTags().contains("farsight_tower_guard"))) {
+                            illager.fallDistance = 0.0f;
+                            var home = illager.getPositionTarget();
+                            if (home != null && !home.equals(BlockPos.ORIGIN) &&
+                                    (illager.getY() < home.getY() - 3.5 || illager.squaredDistanceTo(home.getX() + 0.5, home.getY(), home.getZ() + 0.5) > 100.0)) {
+                                illager.teleport(home.getX() + 0.5, home.getY(), home.getZ() + 0.5, false);
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         registerCommands();
         LOGGER.info("FarSight: World Discovery initialized!");

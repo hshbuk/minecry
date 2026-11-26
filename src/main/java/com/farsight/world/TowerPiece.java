@@ -12,8 +12,6 @@ import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.IllagerEntity;
-import net.minecraft.entity.mob.PillagerEntity;
-import net.minecraft.entity.mob.VindicatorEntity;
 import net.minecraft.loot.LootTables;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.structure.StructureContext;
@@ -33,8 +31,8 @@ public class TowerPiece extends StructurePiece {
 
     public TowerPiece(TowerTheme theme, BlockPos origin) {
         super(FarSightMod.TOWER_PIECE_TYPE, 0, new BlockBox(
-                origin.getX() - 5, origin.getY() - 2, origin.getZ() - 5,
-                origin.getX() + 5, origin.getY() + 34, origin.getZ() + 5
+                origin.getX() - 7, origin.getY() - 2, origin.getZ() - 7,
+                origin.getX() + 7, origin.getY() + 34, origin.getZ() + 7
         ));
         this.theme = theme;
         this.origin = origin;
@@ -98,12 +96,10 @@ public class TowerPiece extends StructurePiece {
                         boolean isWall = Math.abs(dx) == 3 || Math.abs(dz) == 3;
 
                         if (dy == 4) {
-                            // Floor ceiling / next floor deck
                             setBlockIfInBox(world, chunkBox, x, y, z, isWall ? accent : planks);
                         } else if (isCorner) {
                             setBlockIfInBox(world, chunkBox, x, y, z, pillar);
                         } else if (isWall) {
-                            // Doorway on ground floor south side
                             if (floor == 0 && dz == 3 && Math.abs(dx) <= 1 && dy <= 2) {
                                 setBlockIfInBox(world, chunkBox, x, y, z, air);
                             } else if (dy == 2 && (dx == 0 || dz == 0)) {
@@ -118,7 +114,7 @@ public class TowerPiece extends StructurePiece {
                 }
             }
 
-            // Ladder shaft alternating sides (north-west / south-east) so player traverses each floor!
+            // Alternating ladder shaft
             int ladX = (floor % 2 == 0) ? baseX - 2 : baseX + 2;
             int ladZ = (floor % 2 == 0) ? baseZ - 2 : baseZ + 2;
             Direction ladFacing = (floor % 2 == 0) ? Direction.SOUTH : Direction.NORTH;
@@ -127,21 +123,45 @@ public class TowerPiece extends StructurePiece {
                         Blocks.LADDER.getDefaultState().with(LadderBlock.FACING, ladFacing));
             }
 
-            // Place a lantern in the corner
             setBlockIfInBox(world, chunkBox, baseX + 2, fy + 3, baseZ - 2, lantern);
         }
 
-        // 3. Place 2 Signal Relays (on Floor 2 and Floor 3) + Security Barrier over the final rooftop ladder
-        setBlockIfInBox(world, chunkBox, baseX, baseY + 6, baseZ + 2,
+        // 3. Interior & Exterior Parkour Challenges!
+        // Floor 2 (fy = baseY + 6): Stepping-stone parkour blocks leading up to Signal Relay #1
+        int f2 = baseY + 6;
+        setBlockIfInBox(world, chunkBox, baseX - 1, f2, baseZ + 1, accent);
+        setBlockIfInBox(world, chunkBox, baseX + 1, f2 + 1, baseZ + 1, planks);
+        setBlockIfInBox(world, chunkBox, baseX, f2 + 1, baseZ + 2, planks); // platform under relay 1
+        setBlockIfInBox(world, chunkBox, baseX, f2 + 2, baseZ + 2,
                 ModBlocks.SIGNAL_RELAY.getDefaultState().with(SignalRelayBlock.TUNED, false));
-        setBlockIfInBox(world, chunkBox, baseX - 2, baseY + 11, baseZ,
+
+        // Floor 3 (fy = baseY + 11): Exterior Far Cry-style Ledge / Scaffold Parkour on East & North outer wall!
+        int f3 = baseY + 11;
+        // Open two doorways on East wall (dx = 3) for exterior ledge traversal
+        setBlockIfInBox(world, chunkBox, baseX + 3, f3, baseZ + 1, air);
+        setBlockIfInBox(world, chunkBox, baseX + 3, f3 + 1, baseZ + 1, air);
+        setBlockIfInBox(world, chunkBox, baseX + 3, f3, baseZ - 2, air);
+        setBlockIfInBox(world, chunkBox, baseX + 3, f3 + 1, baseZ - 2, air);
+        // Exterior parkour platforms (with 1-block gaps to jump!)
+        setBlockIfInBox(world, chunkBox, baseX + 4, f3 - 1, baseZ + 1, planks);
+        setBlockIfInBox(world, chunkBox, baseX + 5, f3, baseZ, planks);
+        setBlockIfInBox(world, chunkBox, baseX + 5, f3 + 1, baseZ - 2, planks);
+        setBlockIfInBox(world, chunkBox, baseX + 4, f3, baseZ - 2, planks);
+
+        // Signal Relay #2 on Floor 3
+        setBlockIfInBox(world, chunkBox, baseX - 2, f3, baseZ,
                 ModBlocks.SIGNAL_RELAY.getDefaultState().with(SignalRelayBlock.TUNED, false));
+
+        // Floor 4 (fy = baseY + 16): Rafter beams to Loot Chest & Roof Ladder
+        int f4 = baseY + 16;
+        setBlockIfInBox(world, chunkBox, baseX, f4 + 1, baseZ + 1, planks);
+        setBlockIfInBox(world, chunkBox, baseX - 1, f4 + 2, baseZ + 2, planks);
 
         // Security Barrier sealing the roof hatch above the top ladder at (baseX+2, baseY+21, baseZ+2)
         setBlockIfInBox(world, chunkBox, baseX + 2, baseY + 21, baseZ + 2, ModBlocks.TOWER_BARRIER.getDefaultState());
 
         // 4. Loot Chest on Floor 4
-        BlockPos chestPos = new BlockPos(baseX - 2, baseY + 16, baseZ + 2);
+        BlockPos chestPos = new BlockPos(baseX - 2, f4, baseZ + 2);
         if (chunkBox.contains(chestPos)) {
             world.setBlockState(chestPos, Blocks.CHEST.getDefaultState(), 2);
             if (world.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
@@ -149,15 +169,16 @@ public class TowerPiece extends StructurePiece {
             }
         }
 
-        // 5. Rooftop Observation Deck (baseY + 21)
+        // 5. Rooftop Observation Deck (baseY + 21) with FULL guardrails so Pillagers cannot fall or jump off!
         int roofY = baseY + 21;
         for (int dx = -4; dx <= 4; dx++) {
             for (int dz = -4; dz <= 4; dz++) {
                 boolean isEdge = Math.abs(dx) == 4 || Math.abs(dz) == 4;
                 if (isEdge) {
                     setBlockIfInBox(world, chunkBox, baseX + dx, roofY - 1, baseZ + dz, accent);
-                    if (Math.abs(dx) % 2 == 0 || Math.abs(dz) % 2 == 0) {
-                        setBlockIfInBox(world, chunkBox, baseX + dx, roofY, baseZ + dz, fence);
+                    setBlockIfInBox(world, chunkBox, baseX + dx, roofY, baseZ + dz, fence);
+                    if (Math.abs(dx) == 4 && Math.abs(dz) == 4) {
+                        setBlockIfInBox(world, chunkBox, baseX + dx, roofY + 1, baseZ + dz, lantern);
                     }
                 }
             }
@@ -177,18 +198,17 @@ public class TowerPiece extends StructurePiece {
             }
         }
 
-        // Antenna arch behind terminal
         for (int dy = 0; dy < 7; dy++) {
             setBlockIfInBox(world, chunkBox, baseX, roofY + dy, baseZ - 2,
                     dy < 4 ? Blocks.IRON_BARS.getDefaultState() : Blocks.COPPER_BLOCK.getDefaultState());
         }
         setBlockIfInBox(world, chunkBox, baseX, roofY + 7, baseZ - 2, Blocks.LIGHTNING_ROD.getDefaultState());
 
-        // 7. Spawn Pillager Guards across floors and roof
+        // 7. Spawn Tethered Pillager Guards (anchored to their posts so they never flee or jump off!)
         spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX + 1, baseY + 1, baseZ + 1);
-        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX - 1, baseY + 6, baseZ - 1);
-        spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 1, baseY + 11, baseZ + 1);
-        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX, baseY + 16, baseZ);
+        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX - 1, f2, baseZ - 1);
+        spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 1, f3, baseZ - 1);
+        spawnGuard(world, chunkBox, EntityType.PILLAGER, baseX, f4, baseZ);
         spawnGuard(world, chunkBox, EntityType.VINDICATOR, baseX + 2, roofY, baseZ);
     }
 
@@ -205,6 +225,8 @@ public class TowerPiece extends StructurePiece {
         IllagerEntity mob = type.create(world.toServerWorld());
         if (mob != null) {
             mob.setPersistent();
+            mob.addCommandTag("farsight_tower_guard");
+            mob.setPositionTarget(pos, 4);
             mob.refreshPositionAndAngles(x + 0.5, y, z + 0.5, 0.0f, 0.0f);
             mob.initialize(world, world.getLocalDifficulty(pos), SpawnReason.STRUCTURE, null);
             world.spawnEntityAndPassengers(mob);
